@@ -137,7 +137,11 @@ export function Sidebar() {
                   </div>
                 </div>
 
-                <button className="flex items-center gap-1 text-gray-900 hover:gap-2 transition-all mt-2" style={{ fontSize: '12px', fontWeight: 500 }}>
+                <button
+                  onClick={() => window.location.href = '/discussions'}
+                  className="flex items-center gap-1 text-gray-900 hover:gap-2 transition-all mt-2 cursor-pointer"
+                  style={{ fontSize: '12px', fontWeight: 500 }}
+                >
                   View Discussion <ArrowRight size={12} />
                 </button>
               </div>
