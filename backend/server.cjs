@@ -88,15 +88,24 @@ app.get('/api/health', (req, res) => {
   res.json({ message: 'Server is running!', timestamp: new Date().toISOString() });
 });
 
-// Serve static files from React app (build) - Only if frontend is built
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
-  // Catch all handler: send back React's index.html file for any non-API routes
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+// API info endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Job Search API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      jobs: '/api/jobs',
+      auth: '/api/auth',
+      companies: '/api/companies',
+      admin: '/api/admin',
+      upload: '/api/upload'
+    }
   });
-}
+});
+
+// API-only backend - no static file serving needed
+// Frontend is deployed separately on Vercel
 
 // Error handling middleware
 app.use((err, req, res, next) => {
