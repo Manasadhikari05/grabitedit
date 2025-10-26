@@ -107,7 +107,7 @@ export function CreatePost() {
         formData.append('image', selectedImage);
 
         console.log('Starting image upload...'); // Debug log
-        const uploadResponse = await fetch('http://localhost:5001/api/upload/post-image', {
+        const uploadResponse = await fetch('${import.meta.env.VITE_API_URL}/api/upload/post-image', {
           method: 'POST',
           body: formData,
         });
@@ -136,7 +136,7 @@ export function CreatePost() {
       };
       console.log('Creating post with data:', requestBody); // Debug log
 
-      const response = await fetch('http://localhost:5001/api/auth/discussion-posts', {
+      const response = await fetch('${import.meta.env.VITE_API_URL}/api/auth/discussion-posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

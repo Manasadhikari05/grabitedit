@@ -71,13 +71,13 @@ export function AdminDashboard({ onLogout }) {
     try {
       const token = localStorage.getItem("adminToken");
       const [statsRes, companiesRes, jobsRes] = await Promise.all([
-        fetch("http://localhost:5001/api/admin/dashboard/stats", {
+        fetch("${import.meta.env.VITE_API_URL}/api/admin/dashboard/stats", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://localhost:5001/api/admin/companies", {
+        fetch("${import.meta.env.VITE_API_URL}/api/admin/companies", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://localhost:5001/api/admin/jobs", {
+        fetch("${import.meta.env.VITE_API_URL}/api/admin/jobs", {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -112,7 +112,7 @@ export function AdminDashboard({ onLogout }) {
     e.preventDefault();
     try {
       const token = localStorage.getItem("adminToken");
-      const response = await fetch("http://localhost:5001/api/admin/companies", {
+      const response = await fetch("${import.meta.env.VITE_API_URL}/api/admin/companies", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -147,7 +147,7 @@ export function AdminDashboard({ onLogout }) {
     e.preventDefault();
     try {
       const token = localStorage.getItem("adminToken");
-      const response = await fetch("http://localhost:5001/api/admin/jobs", {
+      const response = await fetch("${import.meta.env.VITE_API_URL}/api/admin/jobs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

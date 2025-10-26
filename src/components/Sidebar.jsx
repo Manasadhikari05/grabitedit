@@ -13,7 +13,7 @@ export function Sidebar() {
 
   const fetchTopDiscussions = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/auth/top-discussions');
+      const response = await fetch('${import.meta.env.VITE_API_URL}/api/auth/top-discussions');
       const data = await response.json();
 
       if (data.success) {

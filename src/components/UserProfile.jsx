@@ -651,7 +651,7 @@ export function UserProfile() {
       formData.append('image', file);
 
       try {
-        const response = await fetch('http://localhost:5001/api/upload/image', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload/image`, {
           method: 'POST',
           body: formData,
         });
@@ -661,7 +661,7 @@ export function UserProfile() {
           const cloudinaryUrl = data.imageUrl;
 
           // Save to database
-          const profileResponse = await fetch('http://localhost:5001/api/auth/profile', {
+          const profileResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -699,7 +699,7 @@ export function UserProfile() {
   const handleSave = async () => {
     try {
       // Save to backend
-      const response = await fetch('http://localhost:5001/api/auth/profile', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -742,7 +742,7 @@ export function UserProfile() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/api/auth/account/${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/account/${user.id}`, {
         method: 'DELETE',
       });
 

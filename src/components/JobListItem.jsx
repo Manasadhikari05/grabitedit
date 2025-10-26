@@ -70,7 +70,7 @@ export function JobListItem({
       // Update localStorage with fresh user data after bookmark
       const updateLocalStorage = async () => {
         try {
-          const response = await fetch('http://localhost:5001/api/auth/profile', {
+          const response = await fetch('${import.meta.env.VITE_API_URL}/api/auth/profile', {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,

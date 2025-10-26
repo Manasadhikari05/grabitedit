@@ -163,7 +163,7 @@ export function Dashboard() {
 
       const userData = JSON.parse(storedUser);
       const bookmarkedJobIds = userData.bookmarkedJobs?.map(bookmark => bookmark.job_id) || [];
-      const response = await fetch(`http://localhost:5001/api/jobs/expiring/today/${user.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/jobs/expiring/today/${user.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
