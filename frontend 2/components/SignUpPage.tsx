@@ -20,8 +20,32 @@ export function SignUpPage({ onSwitchToLogin }: { onSwitchToLogin: () => void })
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate sign up
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert('Registration successful. Please sign in.');
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('Network error. Please try again.');
+    }
+
     setIsLoading(false);
   };
 
