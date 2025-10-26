@@ -24,7 +24,8 @@ const corsOptions = {
     'http://localhost:5174',
     'http://localhost:5175',
     'https://job-search-websute-tou4.vercel.app',
-    'https://job-search-websute-tou4-k62h8zd98-manas-projects-1291f11b.vercel.app'
+    'https://job-search-websute-tou4-k62h8zd98-manas-projects-1291f11b.vercel.app',
+    'https://job-search-websute-tou4-k47dfawd7-manas-projects-1291f11b.vercel.app'
   ],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
