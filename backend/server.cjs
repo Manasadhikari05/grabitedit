@@ -22,8 +22,7 @@ const corsOptions = {
     'http://localhost:3002',
     'http://localhost:5173',
     'http://localhost:5174',
-    'http://localhost:5175',
-    'https://job-search-websute-haq5.vercel.app'
+    'http://localhost:5175'
   ],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],

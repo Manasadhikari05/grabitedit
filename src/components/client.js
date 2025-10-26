@@ -1,5 +1,5 @@
 // API client for making requests to the backend
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:5001/api' : (import.meta.env.VITE_API_URL || 'https://job-search-websute-backend.onrender.com/api');
 
 export const fetchJobs = async (userSkills = []) => {
   try {
