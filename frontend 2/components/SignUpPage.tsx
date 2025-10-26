@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { User, Mail, Lock, Eye, EyeOff, Sparkles, Star, Heart, Cloud } from "lucide-react";
 
 export function SignUpPage({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
