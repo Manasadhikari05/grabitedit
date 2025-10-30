@@ -152,9 +152,13 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/jobs', jobRoutes);
 
-// Add database routes
-const databaseRoutes = require('./routes/database');
-app.use('/api/database', databaseRoutes);
+// Add database routes (only if file exists)
+try {
+  const databaseRoutes = require('./routes/database');
+  app.use('/api/database', databaseRoutes);
+} catch (error) {
+  console.warn('⚠️ Database routes not found, skipping...');
+}
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
