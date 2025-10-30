@@ -1,5 +1,5 @@
 // API client for making requests to the backend
-const API_BASE_URL = window.location.hostname === 'localhost' ? '${import.meta.env.VITE_API_URL}/api' : (import.meta.env.VITE_API_URL || 'https://job-search-websute.onrender.com/api');
+const API_BASE_URL = process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/api` : 'http://localhost:5001/api';
 
 export const fetchJobs = async (userSkills = []) => {
   try {
@@ -12,7 +12,8 @@ export const fetchJobs = async (userSkills = []) => {
     return data.jobs || [];
   } catch (error) {
     console.error('Error fetching jobs:', error);
-    throw error;
+    // Return empty array instead of throwing error to prevent UI crashes
+    return [];
   }
 };
 
@@ -53,7 +54,7 @@ export const applyForJob = async (jobId, userId) => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('${import.meta.env.VITE_API_URL}/api/auth/profile', {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -147,7 +148,7 @@ export const bookmarkJob = async (jobId, userId) => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('${import.meta.env.VITE_API_URL}/api/auth/profile', {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -245,7 +246,7 @@ export const removeBookmark = async (jobId, userId) => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('${import.meta.env.VITE_API_URL}/api/auth/profile', {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -379,7 +380,7 @@ export const trackJobView = async (jobId) => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('${import.meta.env.VITE_API_URL}/api/auth/profile', {
+        const response = await fetch('http://localhost:5001/api/auth/profile', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
