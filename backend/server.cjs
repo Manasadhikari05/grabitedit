@@ -168,17 +168,24 @@ app.get('/api/health', (req, res) => {
 // Serve static files from public directory (for PDF.js worker)
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Serve static files from React app (build)
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
+// Serve static files from React app (build) - only if directory exists
+const frontendDistPath = path.join(__dirname, '../frontend/dist');
+const fs = require('fs');
 
-// Catch all handler: send back React's index.html file for any non-API routes
-app.get('*', (req, res) => {
-  // Skip API routes
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ message: 'API endpoint not found' });
-  }
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-});
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
+
+  // Catch all handler: send back React's index.html file for any non-API routes
+  app.get('*', (req, res) => {
+    // Skip API routes
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ message: 'API endpoint not found' });
+    }
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+} else {
+  console.warn('⚠️ Frontend build directory not found, serving API only');
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
