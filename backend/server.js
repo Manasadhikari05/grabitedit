@@ -5,12 +5,14 @@ const path = require('path');
 require('dotenv').config({ path: './config.env' });
 
 const adminRoutes = require('./routes/admin');
+const authRoutes = require('./routes/auth');
 const companyRoutes = require('./routes/company');
 const jobRoutes = require('./routes/job');
+const databaseRoutes = require('./routes/database');
 const Admin = require('./models/Admin');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 const corsOptions = {
@@ -61,8 +63,10 @@ async function createDefaultAdmin() {
 
 // Routes
 app.use('/api/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/jobs', jobRoutes);
+app.use('/api/database', databaseRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
