@@ -12,7 +12,7 @@ export function LoginPage({
   onLogin
 }) {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("mansi@gmail.com");
+  const [email, setEmail] = useState("user@grabit.com");
   const [password, setPassword] = useState("123456");
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,7 +57,7 @@ export function LoginPage({
           {/* Logo */}
           <div className="flex items-center gap-2 mb-12">
             <div className="w-2 h-2 bg-purple-600 rounded-full" />
-            <span className="text-gray-900">Finnger</span>
+            <span className="text-gray-900">GrabIt</span>
           </div>
 
           {/* Heading */}

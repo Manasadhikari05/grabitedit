@@ -101,8 +101,8 @@ export function SignUpPage({ onSwitchToLogin }) {
     }
 
     try {
-     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
-      method: 'POST',
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5001'}/api/auth/register`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: formData.email,
@@ -148,7 +148,7 @@ export function SignUpPage({ onSwitchToLogin }) {
           {/* Logo */}
           <div className="flex items-center gap-2 mb-12">
             <div className="w-2 h-2 bg-purple-600 rounded-full" />
-            <span className="text-gray-900">Finnger</span>
+            <span className="text-gray-900">GrabIt</span>
           </div>
 
           {/* Heading */}
