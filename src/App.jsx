@@ -20,7 +20,6 @@ import { AdminDashboard } from "./components/AdminDashboard";
 import { DiscussionsPage } from "./components/DiscussionsPage";
 import ContactPage from "./components/ContactPage";
 import { Toaster } from "./components/ui/sonner";
-import { ChatbotButton } from "./components/ChatbotButton";
 
 // Navbar Component
 const Navbar = () => {
@@ -593,7 +592,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toaster />
-      <ChatbotButton />
     </>
   );
 }
