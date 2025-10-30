@@ -23,8 +23,8 @@ const cleanupExpiredJobs = async () => {
   }
 };
 
-// Run cleanup on server start
-cleanupExpiredJobs();
+// Run cleanup on server start (only after DB connection)
+setTimeout(cleanupExpiredJobs, 5000); // Delay to ensure DB connection
 
 // Run cleanup every hour
 setInterval(cleanupExpiredJobs, 60 * 60 * 1000);

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
@@ -8,8 +9,9 @@ import { Navbar } from "./Navbar";
 
 export function LoginPage({
   onSwitchToSignUp,
-  onLogin 
+  onLogin
 }) {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("mansi@gmail.com");
   const [password, setPassword] = useState("123456");
   const [rememberMe, setRememberMe] = useState(true);
@@ -19,7 +21,7 @@ export function LoginPage({
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+      const res = await fetch('http://localhost:5001/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -34,7 +36,7 @@ export function LoginPage({
       localStorage.setItem('user', JSON.stringify(data.user));
       setIsLoading(false);
       if (onLogin) onLogin();
-      window.location.href = '/';
+      navigate('/');
     } catch (err) {
       setIsLoading(false);
       alert('Network error. Please try again.');
