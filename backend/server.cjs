@@ -58,7 +58,9 @@ const corsOptions = {
       'http://localhost:3002',
       'http://localhost:5173',
       'http://localhost:5174',
-      'http://localhost:5175'
+      'http://localhost:5175',
+      'https://grabitjon.vercel.app',
+      'https://grabitjon.onrender.com'
     ];
 
     // Add production frontend URL if set
