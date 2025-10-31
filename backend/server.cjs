@@ -60,12 +60,15 @@ const corsOptions = {
       'http://localhost:5174',
       'http://localhost:5175',
       'https://grabitjon.vercel.app',
-      'https://grabitedit.vercel.app'
+      'https://grabitedit.vercel.app',
+      'https://grabitjon-1.onrender.com',
+      'https://grabitedit-1.onrender.com'
     ];
 
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      console.log('CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
