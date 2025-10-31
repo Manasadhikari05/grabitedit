@@ -20,6 +20,7 @@ const corsOptions = {
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:3002',
+    'http://localhost:5173',
     'https://grabitjon.vercel.app',
     'https://job-search-websute-haq5.vercel.app'
   ],
