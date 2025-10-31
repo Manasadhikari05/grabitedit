@@ -140,6 +140,11 @@ app.get('/api/health', (req, res) => {
 // Serve static files from public directory (for PDF.js worker)
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Admin portal route
+app.get('/supersecret-admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'supersecret-admin.html'));
+});
+
 // Serve static files from React app (build) - Only serve if frontend is built
 const frontendPath = path.join(__dirname, '../frontend/dist');
 const indexPath = path.join(frontendPath, 'index.html');
@@ -152,8 +157,8 @@ if (frontendExists) {
 
   // Catch all handler: send back React's index.html file for any non-API routes
   app.get('*', (req, res) => {
-    // Skip API routes
-    if (req.path.startsWith('/api/')) {
+    // Skip API routes and admin route
+    if (req.path.startsWith('/api/') || req.path === '/supersecret-admin') {
       return res.status(404).json({ message: 'API endpoint not found' });
     }
     res.sendFile(indexPath);
