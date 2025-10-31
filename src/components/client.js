@@ -1,5 +1,5 @@
 // API client for making requests to the backend
-const API_BASE_URL = process.env.NODE_ENV === 'production'
+const API_BASE_URL = import.meta.env.PROD
   ? 'https://grabitedit-1.onrender.com/api'
   : 'http://localhost:5001/api';
 
