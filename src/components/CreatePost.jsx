@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Search, X, Smile, Image, Paperclip } from 'lucide-react';
 import { createAvatar } from '@dicebear/core';
 import { lorelei } from '@dicebear/collection';
+import { API_BASE_URL } from './client';
 
 export function CreatePost() {
   const [title, setTitle] = useState('');
@@ -107,7 +108,7 @@ export function CreatePost() {
         formData.append('image', selectedImage);
 
         console.log('Starting image upload...'); // Debug log
-        const uploadResponse = await fetch('${import.meta.env.VITE_API_URL}/api/upload/post-image', {
+        const uploadResponse = await fetch(`${API_BASE_URL}/upload/post-image`, {
           method: 'POST',
           body: formData,
         });
@@ -136,7 +137,7 @@ export function CreatePost() {
       };
       console.log('Creating post with data:', requestBody); // Debug log
 
-      const response = await fetch('${import.meta.env.VITE_API_URL}/api/auth/discussion-posts', {
+      const response = await fetch(`${API_BASE_URL}/auth/discussion-posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
