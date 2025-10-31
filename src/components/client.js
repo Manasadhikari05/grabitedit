@@ -1,5 +1,7 @@
 // API client for making requests to the backend
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+  ? 'https://grabitedit-1.onrender.com/api'
+  : 'http://localhost:5001/api';
 
 export const fetchJobs = async (userSkills = []) => {
   try {
@@ -54,7 +56,7 @@ export const applyForJob = async (jobId, userId) => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('http://localhost:5001/api/auth/profile', {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -148,7 +150,7 @@ export const bookmarkJob = async (jobId, userId) => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('http://localhost:5001/api/auth/profile', {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -246,7 +248,7 @@ export const removeBookmark = async (jobId, userId) => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('http://localhost:5001/api/auth/profile', {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -380,7 +382,7 @@ export const trackJobView = async (jobId) => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('http://localhost:5001/api/auth/profile', {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
