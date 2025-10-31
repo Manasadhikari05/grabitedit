@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { ChatSidebar } from "./ChatSidebar";
 import { ChatArea } from "./ChatArea";
 
+import { API_BASE_URL } from './client';
+
 export function ChatInterface() {
   const [messages, setMessages] = useState([
     {
@@ -56,20 +58,20 @@ export function ChatInterface() {
     const fetchData = async () => {
       try {
         // Fetch jobs
-        const jobsResponse = await fetch('http://localhost:5001/api/jobs');
+        const jobsResponse = await fetch(`${API_BASE_URL}/api/jobs`);
         if (jobsResponse.ok) {
           const jobsResult = await jobsResponse.json();
           setJobsData(jobsResult.jobs || []);
         }
 
         // Fetch companies - try different endpoints
-        const companiesResponse = await fetch('http://localhost:5001/api/companies');
+        const companiesResponse = await fetch(`${API_BASE_URL}/api/companies`);
         if (companiesResponse.ok) {
           const companiesResult = await companiesResponse.json();
           setCompaniesData(companiesResult.companies || []);
         } else {
           // Try alternative endpoint
-          const altCompaniesResponse = await fetch('http://localhost:5001/api/company');
+          const altCompaniesResponse = await fetch(`${API_BASE_URL}/api/company`);
           if (altCompaniesResponse.ok) {
             const companiesResult = await altCompaniesResponse.json();
             setCompaniesData(companiesResult.companies || []);

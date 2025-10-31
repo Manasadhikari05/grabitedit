@@ -5,6 +5,7 @@ import { Checkbox } from "./ui/checkbox";
 import { motion } from "framer-motion";
 import { Check, Lock, Cloud } from "lucide-react";
 import { Navbar } from "./Navbar";
+import { API_BASE_URL } from "./client";
 
 export function LoginPage({
   onSwitchToSignUp,
@@ -19,10 +20,6 @@ export function LoginPage({
     e.preventDefault();
     setIsLoading(true);
     try {
-      const API_BASE_URL = import.meta.env.PROD
-        ? 'https://grabitedit-1.onrender.com/api'
-        : 'http://localhost:5001/api';
-
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

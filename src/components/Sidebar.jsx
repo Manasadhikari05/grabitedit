@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowRight, MessageCircle, Eye, Heart } from 'lucide-react';
 import { createAvatar } from '@dicebear/core';
 import { lorelei } from '@dicebear/collection';
+import { API_BASE_URL as CLIENT_API_BASE_URL } from './client';
 
 export function Sidebar() {
   const [topDiscussions, setTopDiscussions] = useState([]);
@@ -13,11 +14,7 @@ export function Sidebar() {
 
   const fetchTopDiscussions = async () => {
     try {
-      const API_BASE_URL = import.meta.env.PROD
-        ? 'https://grabitedit-1.onrender.com/api'
-        : 'http://localhost:5001/api';
-
-      const response = await fetch(`${API_BASE_URL}/auth/top-discussions`);
+      const response = await fetch(`${CLIENT_API_BASE_URL}/auth/top-discussions`);
       const data = await response.json();
 
       if (data.success) {

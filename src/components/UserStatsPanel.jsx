@@ -2,6 +2,7 @@ import { Button } from "./ui/button";
 import { createAvatar } from '@dicebear/core';
 import { lorelei, avataaars } from '@dicebear/collection';
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from './client';
 
 export function UserStatsPanel({
   userName,
@@ -43,7 +44,7 @@ export function UserStatsPanel({
           return;
         }
 
-        const response = await fetch('http://localhost:5001/api/auth/profile', {
+        const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -132,7 +133,7 @@ export function UserStatsPanel({
             return;
           }
 
-          const response = await fetch('http://localhost:5001/api/auth/profile', {
+          const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,

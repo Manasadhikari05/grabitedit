@@ -10,7 +10,7 @@ import { JobListItem } from "./JobListItem";
 import { JobsGridView } from "./JobsGridView";
 import { UserStatsPanel } from "./UserStatsPanel";
 import { Button } from "./ui/button";
-import { fetchJobs, searchJobs } from "./client";
+import { fetchJobs, searchJobs, API_BASE_URL } from "./client";
 import { createAvatar } from '@dicebear/core';
 import { lorelei } from '@dicebear/collection';
 import ProfileDropdown from "./ProfileDropdown";
@@ -163,7 +163,7 @@ export function Dashboard() {
 
       const userData = JSON.parse(storedUser);
       const bookmarkedJobIds = userData.bookmarkedJobs?.map(bookmark => bookmark.job_id) || [];
-      const response = await fetch(`http://localhost:5001/api/jobs/expiring/today/${user.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/jobs/expiring/today/${user.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

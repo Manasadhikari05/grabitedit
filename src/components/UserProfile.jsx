@@ -30,7 +30,7 @@ import {
   Code,
   Trophy,
   Trash2,
-  BarChart3, 
+  BarChart3,
   PieChart,
   TrendingUp,
   Activity,
@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "./Navbar";
 import ProfileDropdown from "./ProfileDropdown";
+import { API_BASE_URL } from "./client";
 
 export function UserProfile() {
   const navigate = useNavigate();
@@ -651,7 +652,7 @@ export function UserProfile() {
       formData.append('image', file);
 
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload/image`, {
+        const response = await fetch(`${API_BASE_URL}/upload/image`, {
           method: 'POST',
           body: formData,
         });
@@ -661,7 +662,7 @@ export function UserProfile() {
           const cloudinaryUrl = data.imageUrl;
 
           // Save to database
-          const profileResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+          const profileResponse = await fetch(`${API_BASE_URL}/auth/profile`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -699,7 +700,7 @@ export function UserProfile() {
   const handleSave = async () => {
     try {
       // Save to backend
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -742,7 +743,7 @@ export function UserProfile() {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/account/${user.id}`, {
+      const response = await fetch(`${API_BASE_URL}/auth/account/${user.id}`, {
         method: 'DELETE',
       });
 

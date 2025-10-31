@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { TrendingUp, Bookmark, Target, Flame, Briefcase, Calendar } from 'lucide-react';
 import { Badge } from './ui/badge';
 
+import { API_BASE_URL } from './client';
 
 export function ApplicationAnalytics({ userData: propUserData }) {
   // Get real user data from props or localStorage
@@ -54,7 +55,7 @@ export function ApplicationAnalytics({ userData: propUserData }) {
         const jobIds = appliedJobs.slice(-2).map(app => app.job_id);
         const jobDetailsPromises = jobIds.map(async (jobId) => {
           try {
-            const response = await fetch(`http://localhost:5001/api/jobs/${jobId}`);
+            const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}`);
             if (response.ok) {
               const jobData = await response.json();
               return {

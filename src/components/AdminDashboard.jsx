@@ -29,6 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { toast } from "sonner";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { LocationPickerModal } from "./LocationPickerModal";
+import { API_BASE_URL } from "./client";
 
 export function AdminDashboard({ onLogout }) {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -70,7 +71,7 @@ export function AdminDashboard({ onLogout }) {
   const fetchCompanies = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5001/api/companies');
+      const response = await fetch(`${API_BASE_URL}/api/companies`);
       const data = await response.json();
 
       if (data.success) {
@@ -94,7 +95,7 @@ export function AdminDashboard({ onLogout }) {
 
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5001/api/companies/${companyId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${companyId}`, {
         method: 'DELETE',
       });
 
@@ -144,7 +145,7 @@ export function AdminDashboard({ onLogout }) {
         formData.append('image', file);
 
         // Upload to Cloudinary via backend
-        const response = await fetch('http://localhost:5001/api/upload/image', {
+        const response = await fetch(`${API_BASE_URL}/api/upload/image`, {
           method: 'POST',
           body: formData,
         });
@@ -192,7 +193,7 @@ export function AdminDashboard({ onLogout }) {
         size: companySize
       };
 
-      const response = await fetch('http://localhost:5001/api/companies', {
+      const response = await fetch(`${API_BASE_URL}/api/companies`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -265,7 +266,7 @@ export function AdminDashboard({ onLogout }) {
         application_link: applicationLink,
       };
 
-      const response = await fetch('http://localhost:5001/api/jobs', {
+      const response = await fetch(`${API_BASE_URL}/api/jobs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -310,7 +311,7 @@ export function AdminDashboard({ onLogout }) {
   // Fetch jobs from database
   const fetchJobs = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/jobs');
+      const response = await fetch(`${API_BASE_URL}/api/jobs`);
       const data = await response.json();
 
       if (data.success) {
@@ -332,7 +333,7 @@ export function AdminDashboard({ onLogout }) {
 
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5001/api/jobs/${jobId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}`, {
         method: 'DELETE',
       });
 

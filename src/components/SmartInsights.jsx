@@ -5,6 +5,8 @@ import { Button } from './ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import { useState, useEffect } from 'react';
 
+import { API_BASE_URL } from './client';
+
 const recommendedJobs = [];
 
 const careerTips = [
@@ -97,7 +99,7 @@ export function SmartInsights({ onJobClick }) {
 
         if (combinedKeywords.length > 0) {
           // Fetch jobs with skill matching
-          const response = await fetch(`http://localhost:5001/api/jobs?skills=${encodeURIComponent(combinedKeywords.join(','))}`);
+          const response = await fetch(`${API_BASE_URL}/api/jobs?skills=${encodeURIComponent(combinedKeywords.join(','))}`);
           console.log('API response status:', response.status);
           if (response.ok) {
             const data = await response.json();

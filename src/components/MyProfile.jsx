@@ -20,6 +20,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { ApplicationAnalytics } from './ApplicationAnalytics';
 import { SmartInsights } from './SmartInsights';
 import ProfileDropdown from './ProfileDropdown';
+import { API_BASE_URL } from './client';
 
 // Navbar Component
 const Navbar = () => {
@@ -178,7 +179,7 @@ export function MyProfile() {
   const handleSave = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/auth/profile', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -237,7 +238,7 @@ export function MyProfile() {
 
     try {
       const token = localStorage.getItem('token');
-      const uploadResponse = await fetch('http://localhost:5001/api/upload/image', {
+      const uploadResponse = await fetch(`${API_BASE_URL}/api/upload/image`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -252,7 +253,7 @@ export function MyProfile() {
       const uploadResult = await uploadResponse.json();
 
       // Update profile with new image URL
-      const updateResponse = await fetch('http://localhost:5001/api/auth/profile', {
+      const updateResponse = await fetch(`${API_BASE_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -284,7 +285,7 @@ export function MyProfile() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5001/api/auth/account/${user?.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/account/${user?.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

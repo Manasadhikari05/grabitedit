@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createAvatar } from '@dicebear/core';
 import { lorelei } from '@dicebear/collection';
 import { Search } from 'lucide-react';
+import { API_BASE_URL } from './client';
 
 export function DiscussionList({ onViewPost, showOnlyUserPosts = false }) {
   const [posts, setPosts] = useState([]);
@@ -16,10 +17,6 @@ export function DiscussionList({ onViewPost, showOnlyUserPosts = false }) {
         alert('Please login to delete posts');
         return;
       }
-
-      const API_BASE_URL = import.meta.env.PROD
-        ? 'https://grabitedit-1.onrender.com/api'
-        : 'http://localhost:5001/api';
 
       const response = await fetch(`${API_BASE_URL}/auth/discussion-posts/${postId}`, {
         method: 'DELETE',
@@ -61,10 +58,6 @@ export function DiscussionList({ onViewPost, showOnlyUserPosts = false }) {
   const fetchPosts = async () => {
     try {
       // Always fetch all posts first
-      const API_BASE_URL = import.meta.env.PROD
-        ? 'https://grabitedit-1.onrender.com/api'
-        : 'http://localhost:5001/api';
-
       const response = await fetch(`${API_BASE_URL}/auth/discussion-posts`);
       const data = await response.json();
 
