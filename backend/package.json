@@ -4,6 +4,9 @@
   "description": "Backend for Job Web Application",
   "main": "server.cjs",
   "type": "commonjs",
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "start": "node server.cjs",
     "dev": "nodemon server.cjs"
