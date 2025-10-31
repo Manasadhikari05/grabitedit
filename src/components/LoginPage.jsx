@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
@@ -9,10 +8,9 @@ import { Navbar } from "./Navbar";
 
 export function LoginPage({
   onSwitchToSignUp,
-  onLogin
+  onLogin 
 }) {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState("user@grabit.com");
+  const [email, setEmail] = useState("mansi@gmail.com");
   const [password, setPassword] = useState("123456");
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +19,7 @@ export function LoginPage({
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'}/api/auth/login`, {
+      const res = await fetch('http://localhost:5001/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -36,7 +34,7 @@ export function LoginPage({
       localStorage.setItem('user', JSON.stringify(data.user));
       setIsLoading(false);
       if (onLogin) onLogin();
-      navigate('/');
+      window.location.href = '/';
     } catch (err) {
       setIsLoading(false);
       alert('Network error. Please try again.');
@@ -57,7 +55,7 @@ export function LoginPage({
           {/* Logo */}
           <div className="flex items-center gap-2 mb-12">
             <div className="w-2 h-2 bg-purple-600 rounded-full" />
-            <span className="text-gray-900">GrabIt</span>
+            <span className="text-gray-900">Finnger</span>
           </div>
 
           {/* Heading */}

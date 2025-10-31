@@ -101,7 +101,7 @@ export function SignUpPage({ onSwitchToLogin }) {
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'}/api/auth/register`, {
+      const res = await fetch('http://localhost:5001/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -148,7 +148,7 @@ export function SignUpPage({ onSwitchToLogin }) {
           {/* Logo */}
           <div className="flex items-center gap-2 mb-12">
             <div className="w-2 h-2 bg-purple-600 rounded-full" />
-            <span className="text-gray-900">GrabIt</span>
+            <span className="text-gray-900">Finnger</span>
           </div>
 
           {/* Heading */}

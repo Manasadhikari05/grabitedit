@@ -20,6 +20,7 @@ import { AdminDashboard } from "./components/AdminDashboard";
 import { DiscussionsPage } from "./components/DiscussionsPage";
 import ContactPage from "./components/ContactPage";
 import { Toaster } from "./components/ui/sonner";
+import { ChatbotButton } from "./components/ChatbotButton";
 
 // Navbar Component
 const Navbar = () => {
@@ -570,7 +571,7 @@ export default function App() {
     <>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage onSwitchToSignUp={() => { window.location.href = "/signup"; }} onLogin={() => { setIsUserAuthenticated(true); }} />} />
+        <Route path="/login" element={<LoginPage onSwitchToSignUp={() => { window.location.href = "/signup"; }} onLogin={() => { setIsUserAuthenticated(true); window.location.href = "/jobs"; }} />} />
         <Route path="/signup" element={<SignUpPage onSwitchToLogin={() => { window.location.href = "/login"; }} />} />
         <Route path="/jobs" element={<ProtectedRoute><JobSearchPage /></ProtectedRoute>} />
         <Route path="/interests" element={<ProtectedRoute><MyInterestsPage /></ProtectedRoute>} />
@@ -592,6 +593,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toaster />
+      <ChatbotButton />
     </>
   );
 }

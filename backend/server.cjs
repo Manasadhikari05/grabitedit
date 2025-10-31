@@ -48,30 +48,7 @@ process.on('SIGTERM', () => {
 
 // Middleware
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3002',
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:5175'
-    ];
-
-    // Add production frontend URL if set
-    if (process.env.FRONTEND_URL) {
-      allowedOrigins.push(process.env.FRONTEND_URL);
-    }
-
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
   credentials: true,
@@ -88,7 +65,10 @@ const mongooseOptions = {
   serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
   socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
   bufferCommands: false, // Disable mongoose buffering
+  bufferMaxEntries: 0, // Disable mongoose buffering
   maxPoolSize: 10, // Maintain up to 10 socket connections
+  serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
   family: 4 // Use IPv4, skip trying IPv6
 };
 
@@ -152,13 +132,9 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/jobs', jobRoutes);
 
-// Add database routes (only if file exists)
-try {
-  const databaseRoutes = require('./routes/database');
-  app.use('/api/database', databaseRoutes);
-} catch (error) {
-  console.warn('⚠️ Database routes not found, skipping...');
-}
+// Add database routes
+const databaseRoutes = require('./routes/database');
+app.use('/api/database', databaseRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -168,24 +144,17 @@ app.get('/api/health', (req, res) => {
 // Serve static files from public directory (for PDF.js worker)
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Serve static files from React app (build) - only if directory exists
-const frontendDistPath = path.join(__dirname, '../frontend/dist');
-const fs = require('fs');
+// Serve static files from React app (build)
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-if (fs.existsSync(frontendDistPath)) {
-  app.use(express.static(frontendDistPath));
-
-  // Catch all handler: send back React's index.html file for any non-API routes
-  app.get('*', (req, res) => {
-    // Skip API routes
-    if (req.path.startsWith('/api/')) {
-      return res.status(404).json({ message: 'API endpoint not found' });
-    }
-    res.sendFile(path.join(frontendDistPath, 'index.html'));
-  });
-} else {
-  console.warn('⚠️ Frontend build directory not found, serving API only');
-}
+// Catch all handler: send back React's index.html file for any non-API routes
+app.get('*', (req, res) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ message: 'API endpoint not found' });
+  }
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {

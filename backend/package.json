@@ -6,8 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.cjs",
-    "dev": "nodemon server.cjs",
-    "build": "echo 'No build step required for Node.js backend'"
+    "dev": "nodemon server.cjs"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.3",

@@ -56,20 +56,20 @@ export function ChatInterface() {
     const fetchData = async () => {
       try {
         // Fetch jobs
-        const jobsResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'}/api/jobs`);
+        const jobsResponse = await fetch('http://localhost:5001/api/jobs');
         if (jobsResponse.ok) {
           const jobsResult = await jobsResponse.json();
           setJobsData(jobsResult.jobs || []);
         }
 
         // Fetch companies - try different endpoints
-        const companiesResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'}/api/companies`);
+        const companiesResponse = await fetch('http://localhost:5001/api/companies');
         if (companiesResponse.ok) {
           const companiesResult = await companiesResponse.json();
           setCompaniesData(companiesResult.companies || []);
         } else {
           // Try alternative endpoint
-          const altCompaniesResponse = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001'}/api/company`);
+          const altCompaniesResponse = await fetch('http://localhost:5001/api/company');
           if (altCompaniesResponse.ok) {
             const companiesResult = await altCompaniesResponse.json();
             setCompaniesData(companiesResult.companies || []);
