@@ -4,7 +4,6 @@ import { Input } from "./ui/input";
 import { Card } from "./ui/card";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Shield, AlertCircle } from "lucide-react";
-import { API_BASE_URL } from "../components/client";
 
 export function AdminLoginPage({ onLoginSuccess }) {
   const [formData, setFormData] = useState({
@@ -29,7 +28,7 @@ export function AdminLoginPage({ onLoginSuccess }) {
     setError("");
 
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/login`, {
+      const response = await fetch("http://localhost:5001/api/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

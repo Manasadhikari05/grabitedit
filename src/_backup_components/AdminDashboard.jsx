@@ -4,7 +4,6 @@ import { Input } from "./ui/input";
 import { Card } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { motion } from "framer-motion";
-import { API_BASE_URL } from "../components/client";
 import {
   Building2,
   Briefcase,
@@ -72,13 +71,13 @@ export function AdminDashboard({ onLogout }) {
     try {
       const token = localStorage.getItem("adminToken");
       const [statsRes, companiesRes, jobsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/admin/dashboard/stats`, {
+        fetch("http://localhost:5001/api/admin/dashboard/stats", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${API_BASE_URL}/admin/companies`, {
+        fetch("http://localhost:5001/api/admin/companies", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`${API_BASE_URL}/admin/jobs`, {
+        fetch("http://localhost:5001/api/admin/jobs", {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -113,7 +112,7 @@ export function AdminDashboard({ onLogout }) {
     e.preventDefault();
     try {
       const token = localStorage.getItem("adminToken");
-      const response = await fetch(`${API_BASE_URL}/admin/companies`, {
+      const response = await fetch("http://localhost:5001/api/admin/companies", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -148,7 +147,7 @@ export function AdminDashboard({ onLogout }) {
     e.preventDefault();
     try {
       const token = localStorage.getItem("adminToken");
-      const response = await fetch(`${API_BASE_URL}/admin/jobs`, {
+      const response = await fetch("http://localhost:5001/api/admin/jobs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

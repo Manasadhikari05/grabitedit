@@ -46,37 +46,15 @@ process.on('SIGTERM', () => {
   });
 });
 
-// Middleware - CORS configuration for production and development
-const allowedOrigins = [
-  'https://grabitedit.vercel.app',  // Vercel frontend
-  'http://localhost:5173',         // Local development
-  'http://localhost:3000',         // Alternative local port
-  process.env.FRONTEND_URL         // Environment variable for custom frontend URL
-].filter(Boolean); // Remove undefined values
-
+// Middleware
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`CORS blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS policy'), false);
-    }
-  },
+  origin: true, // Allow all origins for now to debug
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
   credentials: true,
-  optionsSuccessStatus: 200
 };
-
-// Apply CORS middleware before routes
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
-
-// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -143,7 +121,7 @@ async function createDefaultAdmin() {
   }
 }
 
-// ===== API Routes (must come before catch-all) =====
+// Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
@@ -159,22 +137,13 @@ app.get('/api/health', (req, res) => {
   res.json({ message: 'Server is running!', timestamp: new Date().toISOString() });
 });
 
-// ===== Special Frontend Route Handlers =====
-
-// Handle frontend requests to /admin/login - redirect to React route
-app.get('/admin/login', (req, res) => {
-  console.log('Frontend attempting to access /admin/login, redirecting to frontend admin route');
-  
-  // Get the frontend URL from the request origin or use default
-  const frontendUrl = req.headers.origin || 'https://grabitedit.vercel.app';
-  const redirectUrl = `${frontendUrl}/supersecret-admin`;
-  
-  console.log(`Redirecting to: ${redirectUrl}`);
-  res.redirect(302, redirectUrl);
-});
-
-// Serve static files from public directory (for PDF.js worker and other assets)
+// Serve static files from public directory (for PDF.js worker)
 app.use(express.static(path.join(__dirname, '../public')));
+
+// Admin portal route
+app.get('/supersecret-admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'supersecret-admin.html'));
+});
 
 // Serve static files from React app (build) - Only serve if frontend is built
 const frontendPath = path.join(__dirname, '../frontend/dist');
@@ -188,17 +157,12 @@ if (frontendExists) {
 
   // Catch all handler: send back React's index.html file for any non-API routes
   app.get('*', (req, res) => {
-    // Skip API routes - let React Router handle all other routes
-    if (req.path.startsWith('/api/')) {
+    // Skip API routes and admin route
+    if (req.path.startsWith('/api/') || req.path === '/supersecret-admin') {
       return res.status(404).json({ message: 'API endpoint not found' });
     }
-    
-    // Serve React app for all frontend routes (including admin routes)
-    console.log(`Serving React app for: ${req.path}`);
     res.sendFile(indexPath);
   });
-  
-  console.log('✅ Frontend build found, serving React app for all non-API routes');
 } else {
   console.log('⚠️ Frontend build not found, serving API only');
 }
