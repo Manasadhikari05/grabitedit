@@ -58,14 +58,14 @@ export function ChatInterface() {
     const fetchData = async () => {
       try {
         // Fetch jobs
-        const jobsResponse = await fetch(`${API_BASE_URL}/api/jobs`);
+        const jobsResponse = await fetch(`${API_BASE_URL}/jobs`);
         if (jobsResponse.ok) {
           const jobsResult = await jobsResponse.json();
           setJobsData(jobsResult.jobs || []);
         }
 
         // Fetch companies - try different endpoints
-        const companiesResponse = await fetch(`${API_BASE_URL}/api/companies`);
+        const companiesResponse = await fetch(`${API_BASE_URL}/companies`);
         if (companiesResponse.ok) {
           const companiesResult = await companiesResponse.json();
           setCompaniesData(companiesResult.companies || []);

@@ -44,7 +44,7 @@ export function UserStatsPanel({
           return;
         }
 
-        const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -133,7 +133,7 @@ export function UserStatsPanel({
             return;
           }
 
-          const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+          const response = await fetch(`${API_BASE_URL}/auth/profile`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
