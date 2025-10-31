@@ -46,15 +46,37 @@ process.on('SIGTERM', () => {
   });
 });
 
-// Middleware
+// Middleware - CORS configuration for production and development
+const allowedOrigins = [
+  'https://grabitedit.vercel.app',  // Vercel frontend
+  'http://localhost:5173',         // Local development
+  'http://localhost:3000',         // Alternative local port
+  process.env.FRONTEND_URL         // Environment variable for custom frontend URL
+].filter(Boolean); // Remove undefined values
+
 const corsOptions = {
-  origin: true, // Allow all origins for now to debug
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS policy'), false);
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
   credentials: true,
+  optionsSuccessStatus: 200
 };
+
+// Apply CORS middleware before routes
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
+
+// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -121,7 +143,7 @@ async function createDefaultAdmin() {
   }
 }
 
-// Routes
+// ===== API Routes (must come before catch-all) =====
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
@@ -135,6 +157,20 @@ app.use('/api/database', databaseRoutes);
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ message: 'Server is running!', timestamp: new Date().toISOString() });
+});
+
+// ===== Special Frontend Route Handlers =====
+
+// Handle frontend requests to /admin/login - redirect to React route
+app.get('/admin/login', (req, res) => {
+  console.log('Frontend attempting to access /admin/login, redirecting to frontend admin route');
+  
+  // Get the frontend URL from the request origin or use default
+  const frontendUrl = req.headers.origin || 'https://grabitedit.vercel.app';
+  const redirectUrl = `${frontendUrl}/supersecret-admin`;
+  
+  console.log(`Redirecting to: ${redirectUrl}`);
+  res.redirect(302, redirectUrl);
 });
 
 // Serve static files from public directory (for PDF.js worker and other assets)
