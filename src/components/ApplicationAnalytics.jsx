@@ -54,7 +54,7 @@ export function ApplicationAnalytics({ userData: propUserData }) {
         const jobIds = appliedJobs.slice(-2).map(app => app.job_id);
         const jobDetailsPromises = jobIds.map(async (jobId) => {
           try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/jobs/${jobId}`);
+            const response = await fetch(`http://localhost:5001/api/jobs/${jobId}`);
             if (response.ok) {
               const jobData = await response.json();
               return {

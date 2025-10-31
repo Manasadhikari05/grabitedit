@@ -17,7 +17,7 @@ export function DiscussionList({ onViewPost, showOnlyUserPosts = false }) {
         return;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/discussion-posts/${postId}`, {
+      const response = await fetch(`http://localhost:5001/api/auth/discussion-posts/${postId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -57,7 +57,7 @@ export function DiscussionList({ onViewPost, showOnlyUserPosts = false }) {
   const fetchPosts = async () => {
     try {
       // Always fetch all posts first
-      const response = await fetch('${import.meta.env.VITE_API_URL}/api/auth/discussion-posts');
+      const response = await fetch('http://localhost:5001/api/auth/discussion-posts');
       const data = await response.json();
 
       if (data.success) {

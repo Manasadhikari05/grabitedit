@@ -1,4 +1,4 @@
-import { Search, X, Smile, Image, Paperclip } from 'lucide-react';
+timport { Search, X, Smile, Image, Paperclip } from 'lucide-react';
 
 export function CommunityPost() {
   return (

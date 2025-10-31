@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { User, Mail, Lock, Eye, EyeOff, Sparkles, Star, Heart, Cloud } from "lucide-react";
 
 export function SignUpPage({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
@@ -20,32 +20,8 @@ export function SignUpPage({ onSwitchToLogin }: { onSwitchToLogin: () => void })
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        alert('Registration successful. Please sign in.');
-      } else {
-        const errorData = await response.json();
-        alert(errorData.message || 'Registration failed');
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      alert('Network error. Please try again.');
-    }
-
+    // Simulate sign up
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     setIsLoading(false);
   };
 

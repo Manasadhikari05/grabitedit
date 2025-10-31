@@ -25,13 +25,25 @@ export function UserStatsPanel({
   // Load data from database via API call
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        // Initialize with empty data if no user
+        setJobsAppliedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+        setJobsBookmarkedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+        setDbUserData(null);
+        return;
+      }
 
       try {
         const token = localStorage.getItem('token');
-        if (!token) return;
+        if (!token) {
+          // Initialize with empty data if no token
+          setJobsAppliedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+          setJobsBookmarkedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+          setDbUserData(null);
+          return;
+        }
 
-        const response = await fetch('${import.meta.env.VITE_API_URL}/api/auth/profile', {
+        const response = await fetch('http://localhost:5001/api/auth/profile', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -50,11 +62,15 @@ export function UserStatsPanel({
           const appliedPerDay = { 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 };
 
           appliedJobs.forEach(job => {
-            const jobDate = new Date(job.appliedAt);
-            const jobWeek = Math.ceil((jobDate - new Date(jobDate.getFullYear(), 0, 1)) / (7 * 24 * 60 * 60 * 1000));
-            if (jobWeek === currentWeek) {
-              const dayName = jobDate.toLocaleDateString('en-US', { weekday: 'short' });
-              appliedPerDay[dayName] = (appliedPerDay[dayName] || 0) + 1;
+            if (job.appliedAt) {
+              const jobDate = new Date(job.appliedAt);
+              const startOfYear = new Date(jobDate.getFullYear(), 0, 1);
+              const days = Math.floor((jobDate - startOfYear) / (24 * 60 * 60 * 1000));
+              const jobWeek = Math.ceil((days + startOfYear.getDay() + 1) / 7);
+              if (jobWeek === currentWeek) {
+                const dayName = jobDate.toLocaleDateString('en-US', { weekday: 'short' });
+                appliedPerDay[dayName] = (appliedPerDay[dayName] || 0) + 1;
+              }
             }
           });
 
@@ -63,11 +79,15 @@ export function UserStatsPanel({
           const bookmarkedPerDay = { 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 };
 
           bookmarkedJobs.forEach(job => {
-            const jobDate = new Date(job.bookmarkedAt);
-            const jobWeek = Math.ceil((jobDate - new Date(jobDate.getFullYear(), 0, 1)) / (7 * 24 * 60 * 60 * 1000));
-            if (jobWeek === currentWeek) {
-              const dayName = jobDate.toLocaleDateString('en-US', { weekday: 'short' });
-              bookmarkedPerDay[dayName] = (bookmarkedPerDay[dayName] || 0) + 1;
+            if (job.bookmarkedAt) {
+              const jobDate = new Date(job.bookmarkedAt);
+              const startOfYear = new Date(jobDate.getFullYear(), 0, 1);
+              const days = Math.floor((jobDate - startOfYear) / (24 * 60 * 60 * 1000));
+              const jobWeek = Math.ceil((days + startOfYear.getDay() + 1) / 7);
+              if (jobWeek === currentWeek) {
+                const dayName = jobDate.toLocaleDateString('en-US', { weekday: 'short' });
+                bookmarkedPerDay[dayName] = (bookmarkedPerDay[dayName] || 0) + 1;
+              }
             }
           });
 
@@ -77,9 +97,18 @@ export function UserStatsPanel({
           console.log('Fetched user data from DB:', data.user);
           console.log('Calculated applied per day:', appliedPerDay);
           console.log('Calculated bookmarked per day:', bookmarkedPerDay);
+        } else {
+          // If API call fails, initialize with empty data
+          setJobsAppliedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+          setJobsBookmarkedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+          setDbUserData(null);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
+        // Initialize with empty data on error - don't crash the UI
+        setJobsAppliedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+        setJobsBookmarkedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+        setDbUserData(null);
       }
     };
 
@@ -95,9 +124,15 @@ export function UserStatsPanel({
         // Fetch fresh data from database when user data changes
         try {
           const token = localStorage.getItem('token');
-          if (!token) return;
+          if (!token) {
+            // Initialize with empty data if no token
+            setJobsAppliedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+            setJobsBookmarkedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+            setDbUserData(null);
+            return;
+          }
 
-          const response = await fetch('${import.meta.env.VITE_API_URL}/api/auth/profile', {
+          const response = await fetch('http://localhost:5001/api/auth/profile', {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -116,11 +151,15 @@ export function UserStatsPanel({
             const appliedPerDay = { 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 };
 
             appliedJobs.forEach(job => {
-              const jobDate = new Date(job.appliedAt);
-              const jobWeek = Math.ceil((jobDate - new Date(jobDate.getFullYear(), 0, 1)) / (7 * 24 * 60 * 60 * 1000));
-              if (jobWeek === currentWeek) {
-                const dayName = jobDate.toLocaleDateString('en-US', { weekday: 'short' });
-                appliedPerDay[dayName] = (appliedPerDay[dayName] || 0) + 1;
+              if (job.appliedAt) {
+                const jobDate = new Date(job.appliedAt);
+                const startOfYear = new Date(jobDate.getFullYear(), 0, 1);
+                const days = Math.floor((jobDate - startOfYear) / (24 * 60 * 60 * 1000));
+                const jobWeek = Math.ceil((days + startOfYear.getDay() + 1) / 7);
+                if (jobWeek === currentWeek) {
+                  const dayName = jobDate.toLocaleDateString('en-US', { weekday: 'short' });
+                  appliedPerDay[dayName] = (appliedPerDay[dayName] || 0) + 1;
+                }
               }
             });
 
@@ -129,11 +168,15 @@ export function UserStatsPanel({
             const bookmarkedPerDay = { 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 };
 
             bookmarkedJobs.forEach(job => {
-              const jobDate = new Date(job.bookmarkedAt);
-              const jobWeek = Math.ceil((jobDate - new Date(jobDate.getFullYear(), 0, 1)) / (7 * 24 * 60 * 60 * 1000));
-              if (jobWeek === currentWeek) {
-                const dayName = jobDate.toLocaleDateString('en-US', { weekday: 'short' });
-                bookmarkedPerDay[dayName] = (bookmarkedPerDay[dayName] || 0) + 1;
+              if (job.bookmarkedAt) {
+                const jobDate = new Date(job.bookmarkedAt);
+                const startOfYear = new Date(jobDate.getFullYear(), 0, 1);
+                const days = Math.floor((jobDate - startOfYear) / (24 * 60 * 60 * 1000));
+                const jobWeek = Math.ceil((days + startOfYear.getDay() + 1) / 7);
+                if (jobWeek === currentWeek) {
+                  const dayName = jobDate.toLocaleDateString('en-US', { weekday: 'short' });
+                  bookmarkedPerDay[dayName] = (bookmarkedPerDay[dayName] || 0) + 1;
+                }
               }
             });
 
@@ -142,9 +185,18 @@ export function UserStatsPanel({
 
             console.log('Storage change - Updated applied per day:', appliedPerDay);
             console.log('Storage change - Updated bookmarked per day:', bookmarkedPerDay);
+          } else {
+            // Initialize with empty data if API call fails
+            setJobsAppliedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+            setJobsBookmarkedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+            setDbUserData(null);
           }
         } catch (error) {
           console.error('Error fetching updated user data:', error);
+          // Initialize with empty data on error
+          setJobsAppliedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+          setJobsBookmarkedData({ 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 });
+          setDbUserData(null);
         }
       }
     };
@@ -156,26 +208,16 @@ export function UserStatsPanel({
   // Get real user data from database state
   const appliedJobsTotal = dbUserData?.appliedJobs?.length || 0;
   const bookmarkedJobsTotal = dbUserData?.bookmarkedJobs?.length || 0;
+  const postViewsTotal = dbUserData?.discussionPosts?.reduce((sum, post) => sum + (post.views || 0), 0) || 0;
 
-  console.log('UserStatsPanel render - appliedJobsTotal:', appliedJobsTotal);
-  console.log('UserStatsPanel render - bookmarkedJobsTotal:', bookmarkedJobsTotal);
-  console.log('UserStatsPanel render - appliedJobsData:', jobsAppliedData);
-  console.log('UserStatsPanel render - bookmarkedJobsData:', jobsBookmarkedData);
-
-  console.log('UserStatsPanel - DB User Data:', dbUserData);
-  console.log('Applied Jobs Total:', appliedJobsTotal);
-  console.log('Bookmarked Jobs Total:', bookmarkedJobsTotal);
-  console.log('Applied Jobs Array:', dbUserData?.appliedJobs);
-  console.log('Bookmarked Jobs Array:', dbUserData?.bookmarkedJobs);
+  // Initialize data objects if they are null/undefined
+  const safeJobsAppliedData = jobsAppliedData || { 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 };
+  const safeJobsBookmarkedData = jobsBookmarkedData || { 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 };
 
   // Get real stats from data
-  const appliedJobs = Object.values(jobsAppliedData).reduce((sum, count) => sum + count, 0);
-  const bookmarkedJobs = Object.values(jobsBookmarkedData).reduce((sum, count) => sum + count, 0);
+  const appliedJobs = Object.values(safeJobsAppliedData).reduce((sum, count) => sum + count, 0);
+  const bookmarkedJobs = Object.values(safeJobsBookmarkedData).reduce((sum, count) => sum + count, 0);
   const totalActivity = appliedJobs + bookmarkedJobs;
-
-  console.log('Graph Data - Applied:', jobsAppliedData);
-  console.log('Graph Data - Bookmarked:', jobsBookmarkedData);
-  console.log('Total Activity:', totalActivity);
 
   // Generate DiceBear avatar based on gender
   const getAvatarStyle = (gender) => {
@@ -238,7 +280,7 @@ export function UserStatsPanel({
                 // Applied jobs path
                 const appliedPoints = days.map((day, index) => {
                   const x = (index / 6) * 200;
-                  const value = jobsAppliedData[day] || 0;
+                  const value = safeJobsAppliedData[day] || 0;
                   const y = 80 - Math.min(value * 8, 70); // Increased scale for better visibility
                   return `${x},${y}`;
                 }).join(' L ');
@@ -246,7 +288,7 @@ export function UserStatsPanel({
                 // Bookmarked jobs path
                 const bookmarkedPoints = days.map((day, index) => {
                   const x = (index / 6) * 200;
-                  const value = jobsBookmarkedData[day] || 0;
+                  const value = safeJobsBookmarkedData[day] || 0;
                   const y = 80 - Math.min(value * 8, 70); // Increased scale for better visibility
                   return `${x},${y}`;
                 }).join(' L ');
@@ -310,7 +352,7 @@ export function UserStatsPanel({
         <div className="border-t mt-4 pt-4">
           <div className="text-center mb-3">
             <div className="text-gray-600 text-sm mb-1">Post Views</div>
-            <div className="text-3xl mb-1">268</div>
+            <div className="text-3xl mb-1">{postViewsTotal}</div>
             <div className="text-gray-500 text-sm">Views</div>
           </div>
           <div className="text-center">

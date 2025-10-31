@@ -30,7 +30,7 @@ import {
   Code,
   Trophy,
   Trash2,
-  BarChart3,
+  BarChart3, 
   PieChart,
   TrendingUp,
   Activity,

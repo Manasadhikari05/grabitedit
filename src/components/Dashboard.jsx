@@ -163,13 +163,23 @@ export function Dashboard() {
 
       const userData = JSON.parse(storedUser);
       const bookmarkedJobIds = userData.bookmarkedJobs?.map(bookmark => bookmark.job_id) || [];
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/jobs/expiring/today/${user.id}`, {
+      const response = await fetch(`http://localhost:5001/api/jobs/expiring/today/${user.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ bookmarkedJobIds })
       });
+
+      if (!response.ok) {
+        // If API fails, silently fail and don't show expiring jobs
+        setExpiringJobsData({
+          bookmarkedExpiringJobs: [],
+          recommendedExpiringJobs: []
+        });
+        return;
+      }
+
       const data = await response.json();
 
       if (data.success) {
@@ -180,6 +190,11 @@ export function Dashboard() {
       }
     } catch (error) {
       console.error('Error fetching expiring jobs:', error);
+      // Silently fail and don't show expiring jobs
+      setExpiringJobsData({
+        bookmarkedExpiringJobs: [],
+        recommendedExpiringJobs: []
+      });
     } finally {
       setExpiringJobsLoading(false);
     }

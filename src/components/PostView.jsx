@@ -54,7 +54,7 @@ export function PostView({ onBack, post }) {
 
   const incrementView = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/discussion-posts/${post.post_id}/view`, {
+      const response = await fetch(`http://localhost:5001/api/auth/discussion-posts/${post.post_id}/view`, {
         method: 'POST',
       });
       const data = await response.json();
@@ -74,7 +74,7 @@ export function PostView({ onBack, post }) {
         return;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/discussion-posts/${post.post_id}/like`, {
+      const response = await fetch(`http://localhost:5001/api/auth/discussion-posts/${post.post_id}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -94,7 +94,7 @@ export function PostView({ onBack, post }) {
 
   const fetchComments = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/post-comments/${post.post_id}`);
+      const response = await fetch(`http://localhost:5001/api/auth/post-comments/${post.post_id}`);
       const data = await response.json();
 
       if (data.success) {
@@ -147,7 +147,7 @@ export function PostView({ onBack, post }) {
         return;
       }
 
-      const response = await fetch('${import.meta.env.VITE_API_URL}/api/auth/post-comments', {
+      const response = await fetch('http://localhost:5001/api/auth/post-comments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -185,7 +185,7 @@ export function PostView({ onBack, post }) {
         return;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/post-comments/${commentId}`, {
+      const response = await fetch(`http://localhost:5001/api/auth/post-comments/${commentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
