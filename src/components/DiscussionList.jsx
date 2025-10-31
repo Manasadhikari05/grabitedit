@@ -17,7 +17,11 @@ export function DiscussionList({ onViewPost, showOnlyUserPosts = false }) {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/api/auth/discussion-posts/${postId}`, {
+      const API_BASE_URL = import.meta.env.PROD
+        ? 'https://grabitedit-1.onrender.com/api'
+        : 'http://localhost:5001/api';
+
+      const response = await fetch(`${API_BASE_URL}/auth/discussion-posts/${postId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -57,7 +61,11 @@ export function DiscussionList({ onViewPost, showOnlyUserPosts = false }) {
   const fetchPosts = async () => {
     try {
       // Always fetch all posts first
-      const response = await fetch('http://localhost:5001/api/auth/discussion-posts');
+      const API_BASE_URL = import.meta.env.PROD
+        ? 'https://grabitedit-1.onrender.com/api'
+        : 'http://localhost:5001/api';
+
+      const response = await fetch(`${API_BASE_URL}/auth/discussion-posts`);
       const data = await response.json();
 
       if (data.success) {

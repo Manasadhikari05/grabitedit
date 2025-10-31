@@ -13,7 +13,11 @@ export function Sidebar() {
 
   const fetchTopDiscussions = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/auth/top-discussions');
+      const API_BASE_URL = import.meta.env.PROD
+        ? 'https://grabitedit-1.onrender.com/api'
+        : 'http://localhost:5001/api';
+
+      const response = await fetch(`${API_BASE_URL}/auth/top-discussions`);
       const data = await response.json();
 
       if (data.success) {
