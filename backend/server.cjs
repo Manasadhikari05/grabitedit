@@ -145,11 +145,6 @@ app.get('/supersecret-admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'supersecret-admin.html'));
 });
 
-// Redirect /admin/login to /supersecret-admin for backward compatibility
-app.get('/admin/login', (req, res) => {
-  res.redirect('/supersecret-admin');
-});
-
 // Serve static files from React app (build) - Only serve if frontend is built
 const frontendPath = path.join(__dirname, '../frontend/dist');
 const indexPath = path.join(frontendPath, 'index.html');
@@ -160,6 +155,11 @@ const frontendExists = require('fs').existsSync(indexPath);
 if (frontendExists) {
   app.use(express.static(frontendPath));
 
+  // Redirect /admin/login to /supersecret-admin for backward compatibility
+  app.get('/admin/login', (req, res) => {
+    res.redirect('/supersecret-admin');
+  });
+
   // Catch all handler: send back React's index.html file for any non-API routes
   app.get('*', (req, res) => {
     // Skip API routes and admin routes
@@ -169,6 +169,10 @@ if (frontendExists) {
     res.sendFile(indexPath);
   });
 } else {
+  // When no frontend build exists, redirect /admin/login to main admin portal
+  app.get('/admin/login', (req, res) => {
+    res.redirect('/supersecret-admin');
+  });
   console.log('⚠️ Frontend build not found, serving API only');
 }
 
