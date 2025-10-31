@@ -51,7 +51,12 @@ app.use(cors(corsOptions));
 
 // Handle preflight requests explicitly
 app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  console.log('OPTIONS request received for:', req.path);
+  console.log('Origin:', req.headers.origin);
+  console.log('Method:', req.headers['access-control-request-method']);
+  console.log('Headers:', req.headers['access-control-request-headers']);
+
+  res.header('Access-Control-Allow-Origin', req.headers.origin || 'https://grabitjon.vercel.app');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
   res.header('Access-Control-Allow-Credentials', 'true');
