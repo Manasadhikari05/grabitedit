@@ -1,9 +1,11 @@
-export const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+export const API_BASE_URL = import.meta.env.PROD
+  ? 'https://grabitedit-1.onrender.com/api'
+  : 'http://localhost:5001/api';
 
 export const fetchJobs = async (userSkills = []) => {
   try {
     const skillsQuery = userSkills.length > 0 ? `?skills=${encodeURIComponent(userSkills.join(','))}` : '';
-    const response = await fetch(`${API_BASE_URL}/api/jobs${skillsQuery}`);
+    const response = await fetch(`${API_BASE_URL}/jobs${skillsQuery}`);
     if (!response.ok) {
       throw new Error('Failed to fetch jobs');
     }
