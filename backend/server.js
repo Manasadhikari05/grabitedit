@@ -16,7 +16,13 @@ const PORT = process.env.PORT || 5001;
 
 // Middleware
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002',
+    'https://grabitjon.vercel.app',
+    'https://job-search-websute-haq5.vercel.app'
+  ],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -71,6 +77,11 @@ app.use('/api/database', databaseRoutes);
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ message: 'Server is running!', timestamp: new Date().toISOString() });
+});
+
+// Catch-all handler for unknown API routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ message: 'API endpoint not found' });
 });
 
 // Error handling middleware
