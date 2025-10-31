@@ -137,13 +137,8 @@ app.get('/api/health', (req, res) => {
   res.json({ message: 'Server is running!', timestamp: new Date().toISOString() });
 });
 
-// Serve static files from public directory (for PDF.js worker)
+// Serve static files from public directory (for PDF.js worker and other assets)
 app.use(express.static(path.join(__dirname, '../public')));
-
-// Admin portal route
-app.get('/supersecret-admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'supersecret-admin.html'));
-});
 
 // Serve static files from React app (build) - Only serve if frontend is built
 const frontendPath = path.join(__dirname, '../frontend/dist');
@@ -155,24 +150,20 @@ const frontendExists = require('fs').existsSync(indexPath);
 if (frontendExists) {
   app.use(express.static(frontendPath));
 
-  // Redirect /admin/login to /supersecret-admin for backward compatibility
-  app.get('/admin/login', (req, res) => {
-    res.redirect('/supersecret-admin');
-  });
-
   // Catch all handler: send back React's index.html file for any non-API routes
   app.get('*', (req, res) => {
-    // Skip API routes and admin routes
-    if (req.path.startsWith('/api/') || req.path === '/supersecret-admin' || req.path === '/admin/login') {
+    // Skip API routes - let React Router handle all other routes
+    if (req.path.startsWith('/api/')) {
       return res.status(404).json({ message: 'API endpoint not found' });
     }
+    
+    // Serve React app for all frontend routes (including admin routes)
+    console.log(`Serving React app for: ${req.path}`);
     res.sendFile(indexPath);
   });
+  
+  console.log('✅ Frontend build found, serving React app for all non-API routes');
 } else {
-  // When no frontend build exists, redirect /admin/login to main admin portal
-  app.get('/admin/login', (req, res) => {
-    res.redirect('/supersecret-admin');
-  });
   console.log('⚠️ Frontend build not found, serving API only');
 }
 
