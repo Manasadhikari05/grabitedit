@@ -5,15 +5,115 @@ const Job = require('../models/Job');
 
 const router = express.Router();
 
+// Generate OTP
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+// Send OTP for email verification
+router.post('/send-otp', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    // Check if email is valid format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Please provide a valid email address' });
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Find user by email and update OTP
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found. Please register first.' });
+    }
+
+    // Update user with OTP
+    user.emailVerificationToken = otp;
+    user.emailVerificationExpires = otpExpiry;
+    await user.save();
+
+    // In a real application, you would send this OTP via email
+    // For now, we'll return it in the response (remove this in production)
+    console.log(`OTP for ${email}: ${otp}`);
+    
+    return res.json({
+      message: 'OTP sent successfully',
+      // Remove this in production - only for testing
+      otp: process.env.NODE_ENV === 'development' ? otp : undefined,
+      expiresIn: '10 minutes'
+    });
+
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Verify OTP
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    
+    if (!email || !otp) {
+      return res.status(400).json({ message: 'Email and OTP are required' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if OTP is valid and not expired
+    if (user.emailVerificationToken !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    if (!user.emailVerificationExpires || user.emailVerificationExpires < new Date()) {
+      return res.status(400).json({ message: 'OTP has expired. Please request a new one.' });
+    }
+
+    // Mark email as verified
+    user.isEmailVerified = true;
+    user.emailVerificationToken = '';
+    user.emailVerificationExpires = null;
+    await user.save();
+
+    return res.json({
+      message: 'Email verified successfully',
+      emailVerified: true
+    });
+
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // User Register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name, interests, gender } = req.body;
+    const { email, password, name, interests, gender, emailVerified } = req.body;
     if (!email || !password || !name) {
       return res.status(400).json({ message: 'Email, password, and name are required' });
     }
     if (!interests || interests.length < 3) {
       return res.status(400).json({ message: 'Please select at least 3 jobs' });
+    }
+
+    // Check if email is verified
+    if (!emailVerified) {
+      return res.status(400).json({
+        message: 'Please verify your email first',
+        emailVerificationRequired: true
+      });
     }
 
     // Check for email uniqueness
@@ -55,7 +155,8 @@ router.post('/register', async (req, res) => {
       name,
       gender: gender || 'prefer-not-to-say',
       interests,
-      avatarColor
+      avatarColor,
+      isEmailVerified: true // Since we're verifying before registration
     });
     await user.save();
     return res.status(201).json({ message: 'User registered successfully' });

@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
 import { motion } from "framer-motion";
-import { User, Mail, Lock, Eye, EyeOff, Sparkles, Star, Heart, Cloud, Users, X, Plus } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, Sparkles, Star, Heart, Cloud, Users, X, Plus, CheckCircle } from "lucide-react";
 import { API_BASE_URL } from "./client";
 
 export function SignUpPage({ onSwitchToLogin }) {
@@ -20,6 +20,12 @@ export function SignUpPage({ onSwitchToLogin }) {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showInterestsModal, setShowInterestsModal] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [emailVerificationStep, setEmailVerificationStep] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCountdown, setOtpCountdown] = useState(0);
+  const [otpLoading, setOtpLoading] = useState(false);
 
   // Comprehensive interests list organized by categories
   const interestsCategories = {
@@ -85,6 +91,102 @@ export function SignUpPage({ onSwitchToLogin }) {
     ]
   };
 
+  // OTP countdown timer
+  useEffect(() => {
+    let timer;
+    if (otpCountdown > 0) {
+      timer = setTimeout(() => setOtpCountdown(otpCountdown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [otpCountdown]);
+
+  // Send OTP function
+  const handleSendOTP = async () => {
+    if (!formData.email) {
+      alert('Please enter your email address first');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        alert(data.message || 'Failed to send OTP');
+        setOtpLoading(false);
+        return;
+      }
+
+      setOtpSent(true);
+      setOtpCountdown(600); // 10 minutes
+      setEmailVerificationStep(true);
+      alert(data.message + (data.otp ? ` (OTP: ${data.otp} - Development mode only)` : ''));
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      alert('Network error. Please try again.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  // Verify OTP function
+  const handleVerifyOTP = async () => {
+    if (!otp || otp.length !== 6) {
+      alert('Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          otp: otp
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        alert(data.message || 'Invalid OTP');
+        setOtpLoading(false);
+        return;
+      }
+
+      setIsEmailVerified(true);
+      setEmailVerificationStep(false);
+      setOtp('');
+      alert('Email verified successfully!');
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      alert('Network error. Please try again.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  // Resend OTP function
+  const handleResendOTP = () => {
+    setOtp('');
+    setOtpSent(false);
+    handleSendOTP();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -101,6 +203,12 @@ export function SignUpPage({ onSwitchToLogin }) {
       return;
     }
 
+    if (!isEmailVerified) {
+      alert('Please verify your email first');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
@@ -111,12 +219,19 @@ export function SignUpPage({ onSwitchToLogin }) {
           name: formData.fullName,
           gender: formData.gender,
           interests: selectedInterests,
+          emailVerified: isEmailVerified,
         }),
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        alert(errorData.message || 'Registration failed');
+        if (errorData.emailVerificationRequired) {
+          alert('Please verify your email before registering');
+          setIsEmailVerified(false);
+          setEmailVerificationStep(true);
+        } else {
+          alert(errorData.message || 'Registration failed');
+        }
         setIsLoading(false);
         return;
       }
@@ -213,6 +328,7 @@ export function SignUpPage({ onSwitchToLogin }) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35, duration: 0.6 }}
+              className="space-y-3"
             >
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -221,10 +337,78 @@ export function SignUpPage({ onSwitchToLogin }) {
                   placeholder="Email"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
-                  className="h-12 pl-10 bg-white border-gray-200 rounded-lg"
+                  className={`h-12 pl-10 pr-10 bg-white border-gray-200 rounded-lg ${
+                    isEmailVerified ? 'border-green-500' : ''
+                  }`}
                   required
+                  disabled={emailVerificationStep && !isEmailVerified}
                 />
+                {isEmailVerified && (
+                  <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                )}
               </div>
+              
+              {!emailVerificationStep && !isEmailVerified && (
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={handleSendOTP}
+                    disabled={otpLoading || !formData.email}
+                    className="h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                  >
+                    {otpLoading ? 'Sending...' : 'Verify Email'}
+                  </Button>
+                </div>
+              )}
+
+              {emailVerificationStep && !isEmailVerified && (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Enter 6-digit OTP"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="h-10 text-center text-lg tracking-wider"
+                      maxLength={6}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleVerifyOTP}
+                      disabled={otpLoading || otp.length !== 6}
+                      className="h-10 px-4 bg-green-600 hover:bg-green-700 text-white text-sm"
+                    >
+                      {otpLoading ? 'Verifying...' : 'Verify'}
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">
+                      {otpCountdown > 0
+                        ? `Resend in ${Math.floor(otpCountdown / 60)}:${(otpCountdown % 60).toString().padStart(2, '0')}`
+                        : 'OTP expired'
+                      }
+                    </span>
+                    {otpCountdown === 0 && (
+                      <Button
+                        type="button"
+                        onClick={handleResendOTP}
+                        disabled={otpLoading}
+                        className="text-blue-600 hover:text-blue-700 text-sm underline"
+                      >
+                        Resend OTP
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {isEmailVerified && (
+                <div className="flex items-center gap-2 text-green-600 text-sm">
+                  <CheckCircle className="w-4 h-4" />
+                  Email verified successfully
+                </div>
+              )}
             </motion.div>
 
             <motion.div
@@ -364,7 +548,7 @@ export function SignUpPage({ onSwitchToLogin }) {
               <Button
                 type="submit"
                 className="w-full h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-                disabled={isLoading || !agreeToTerms}
+                disabled={isLoading || !agreeToTerms || !isEmailVerified}
               >
                 {isLoading ? (
                   <motion.div
@@ -383,6 +567,8 @@ export function SignUpPage({ onSwitchToLogin }) {
                     />
                     Creating account...
                   </motion.div>
+                ) : !isEmailVerified ? (
+                  "Verify Email First"
                 ) : (
                   "Sign Up"
                 )}
