@@ -9,19 +9,25 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
   try {
     const { email, password, name, interests, gender } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+    if (!email || !password || !name) {
+      return res.status(400).json({ message: 'Email, password, and name are required' });
     }
     if (!interests || interests.length < 3) {
       return res.status(400).json({ message: 'Please select at least 3 jobs' });
     }
 
-    // Allow more than 3 jobs, no upper limit
-    const exists = await User.findOne({ email });
-    if (exists) {
-      return res.status(400).json({ message: 'User already exists' });
+    // Check for email uniqueness
+    const emailExists = await User.findOne({ email });
+    if (emailExists) {
+      return res.status(400).json({ message: 'Email already registered' });
     }
-    
+
+    // Check for name/username uniqueness
+    const nameExists = await User.findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
+    if (nameExists) {
+      return res.status(400).json({ message: 'Username already taken' });
+    }
+
     // Generate gender-appropriate avatar colors
     const getAvatarColor = (userGender) => {
       switch (userGender) {
@@ -55,6 +61,12 @@ router.post('/register', async (req, res) => {
     return res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     console.error(error);
+    if (error.code === 11000 && error.keyPattern.name) {
+      return res.status(400).json({ message: 'Username already taken' });
+    }
+    if (error.code === 11000 && error.keyPattern.email) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
     res.status(500).json({ message: 'Server error' });
   }
 });
