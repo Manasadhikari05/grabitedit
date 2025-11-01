@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Job = require('../models/Job');
+const { sendOTPEmail } = require('../config/email');
 
 const router = express.Router();
 
@@ -60,12 +61,24 @@ router.post('/send-otp', async (req, res) => {
     // For now, we'll return it in the response (remove this in production)
     console.log(`OTP for ${email}: ${otp}`);
     
+    // Send actual email
+    let emailResult;
+    try {
+      emailResult = await sendOTPEmail(email, otp);
+      console.log('Email sent successfully');
+    } catch (emailError) {
+      console.error('Error sending email:', emailError);
+      // Continue anyway, OTP is still valid for verification
+    }
+    
     return res.json({
       message: 'OTP sent successfully',
       // Remove this in production - only for testing
       otp: process.env.NODE_ENV === 'development' ? otp : undefined,
       expiresIn: '10 minutes',
-      isNewUser: !user
+      isNewUser: !user,
+      emailSent: emailResult ? true : false,
+      previewUrl: emailResult?.previewUrl // For development testing
     });
 
   } catch (error) {
