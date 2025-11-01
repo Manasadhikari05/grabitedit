@@ -64,11 +64,18 @@ router.post('/send-otp', async (req, res) => {
     // Send actual email
     let emailResult;
     let emailSent = false;
+    let showOTP = true;
+    
     try {
       emailResult = await sendOTPEmail(email, otp);
-      emailSent = emailResult.success;
-      if (emailResult.success) {
-        console.log('✅ Email sent successfully');
+      emailSent = emailResult.emailSent || false;
+      
+      // If email was sent successfully, don't show OTP in response
+      if (emailResult.emailSent) {
+        showOTP = false;
+        console.log('✅ Email sent successfully to:', email);
+      } else {
+        console.log('⚠️ Email service unavailable, showing OTP for testing');
       }
     } catch (emailError) {
       console.error('❌ Error sending email:', emailError);
@@ -76,18 +83,27 @@ router.post('/send-otp', async (req, res) => {
       // Continue anyway, OTP is still valid for verification
     }
     
-    // In development, always show OTP for testing
-    const showOTP = process.env.NODE_ENV === 'development' || !emailSent;
+    // Always log OTP clearly in console for debugging
+    console.log('\n==========================================');
+    console.log('🔐 OTP VERIFICATION INFORMATION');
+    console.log('==========================================');
+    console.log('📧 Email:', email);
+    console.log('🔢 OTP:', otp);
+    console.log('⏰ Expires in: 10 minutes');
+    console.log('📧 Email sent:', emailSent ? 'YES' : 'NO');
+    console.log('👁️ Show OTP in response:', showOTP ? 'YES' : 'NO');
+    console.log('==========================================\n');
     
     return res.json({
-      message: emailSent ? 'OTP sent successfully to your email' : 'OTP generated (Email service unavailable)',
-      // Show OTP in development or when email fails
+      message: emailSent ? 'OTP sent successfully to your email. Check your inbox.' : 'OTP generated (Email service unavailable)',
+      // Show OTP when email fails or in development
       otp: showOTP ? otp : undefined,
       expiresIn: '10 minutes',
       isNewUser: !user,
       emailSent: emailSent,
-      showOTP: showOTP, // Tell frontend to display OTP
-      previewUrl: emailResult?.previewUrl // For development testing
+      showOTP: showOTP,
+      consoleOTP: process.env.NODE_ENV === 'development', // Always show OTP in console for development
+      instructions: !emailSent ? 'Check the server console for the OTP code' : undefined
     });
 
   } catch (error) {
