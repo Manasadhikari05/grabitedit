@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const uploadRoutes = require('./routes/upload');
 const companyRoutes = require('./routes/company');
 const jobRoutes = require('./routes/job');
+const otpRoutes = require('./routes/otp');
 const Admin = require('./models/Admin');
 
 const app = express();
@@ -124,6 +125,7 @@ async function createDefaultAdmin() {
 // Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/otp', otpRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/jobs', jobRoutes);

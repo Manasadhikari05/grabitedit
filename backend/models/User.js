@@ -264,6 +264,19 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // OTP Specific Fields
+  otp: {
+    type: String,
+    default: ''
+  },
+  otpExpires: {
+    type: Date,
+    default: null
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now
