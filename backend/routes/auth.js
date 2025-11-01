@@ -8,7 +8,7 @@ const router = express.Router();
 // User Register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name, interests } = req.body;
+    const { email, password, name, interests, gender } = req.body;
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
@@ -21,11 +21,36 @@ router.post('/register', async (req, res) => {
     if (exists) {
       return res.status(400).json({ message: 'User already exists' });
     }
-    // Generate random avatar color for react-avatar
-    const avatarColors = ['#FF6B6B', '#4DB8FF', '#B968FF', '#FFB84D', '#7C4DFF', '#00BCD4'];
-    const randomColor = avatarColors[Math.floor(Math.random() * avatarColors.length)];
+    
+    // Generate gender-appropriate avatar colors
+    const getAvatarColor = (userGender) => {
+      switch (userGender) {
+        case 'male':
+          // Male-appropriate colors (blues, teals, purples)
+          return ['#4DB8FF', '#00BCD4', '#7C4DFF', '#3F51B5', '#2196F3', '#03A9F4'][Math.floor(Math.random() * 6)];
+        case 'female':
+          // Female-appropriate colors (pinks, purples, warm tones)
+          return ['#FF6B6B', '#FFB84D', '#B968FF', '#E91E63', '#FFC107', '#FF9800'][Math.floor(Math.random() * 6)];
+        case 'other':
+          // Gender-neutral colors (greens, oranges, mixed palette)
+          return ['#4CAF50', '#8BC34A', '#FF5722', '#FFB84D', '#9C27B0', '#607D8B'][Math.floor(Math.random() * 6)];
+        case 'prefer-not-to-say':
+        default:
+          // All colors available for users who prefer not to specify
+          return ['#FF6B6B', '#4DB8FF', '#B968FF', '#FFB84D', '#7C4DFF', '#00BCD4', '#4CAF50', '#FF5722'][Math.floor(Math.random() * 8)];
+      }
+    };
 
-    const user = new User({ email, password, name, interests, avatarColor: randomColor });
+    const avatarColor = getAvatarColor(gender || 'prefer-not-to-say');
+
+    const user = new User({
+      email,
+      password,
+      name,
+      gender: gender || 'prefer-not-to-say',
+      interests,
+      avatarColor
+    });
     await user.save();
     return res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
