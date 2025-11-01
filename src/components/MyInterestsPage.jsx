@@ -118,14 +118,19 @@ export function MyInterestsPage() {
         setJobs(fetchedJobs);
 
         // Filter to only show bookmarked jobs from user data
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-          const bookmarkedJobIds = userData.bookmarkedJobs?.map(bookmark => bookmark.job_id) || [];
-          const bookmarkedJobs = fetchedJobs.filter(job => bookmarkedJobIds.includes(job._id));
-          setFilteredJobs(bookmarkedJobs);
-        } else {
+        try {
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            const userData = JSON.parse(storedUser);
+            setUser(userData);
+            const bookmarkedJobIds = userData.bookmarkedJobs?.map(bookmark => bookmark.job_id) || [];
+            const bookmarkedJobs = fetchedJobs.filter(job => bookmarkedJobIds.includes(job._id));
+            setFilteredJobs(bookmarkedJobs);
+          } else {
+            setFilteredJobs([]);
+          }
+        } catch (storageError) {
+          console.warn('Error reading user data:', storageError);
           setFilteredJobs([]);
         }
       } catch (err) {
@@ -140,16 +145,20 @@ export function MyInterestsPage() {
 
     // Listen for storage changes to update bookmarks
     const handleStorageChange = (e) => {
-      if (e.key === 'user') {
-        const newUser = e.newValue ? JSON.parse(e.newValue) : null;
-        setUser(newUser);
+      try {
+        if (e.key === 'user') {
+          const newUser = e.newValue ? JSON.parse(e.newValue) : null;
+          setUser(newUser);
 
-        // Update filtered jobs when user data changes
-        if (newUser && jobs.length > 0) {
-          const bookmarkedJobIds = newUser.bookmarkedJobs?.map(bookmark => bookmark.job_id) || [];
-          const bookmarkedJobs = jobs.filter(job => bookmarkedJobIds.includes(job._id));
-          setFilteredJobs(bookmarkedJobs);
+          // Update filtered jobs when user data changes
+          if (newUser && jobs.length > 0) {
+            const bookmarkedJobIds = newUser.bookmarkedJobs?.map(bookmark => bookmark.job_id) || [];
+            const bookmarkedJobs = jobs.filter(job => bookmarkedJobIds.includes(job._id));
+            setFilteredJobs(bookmarkedJobs);
+          }
         }
+      } catch (error) {
+        console.warn('Error handling storage change:', error);
       }
     };
 
@@ -162,30 +171,36 @@ export function MyInterestsPage() {
     if (!user || jobs.length === 0) return;
 
     const performSearch = async () => {
-      const bookmarkedJobIds = user.bookmarkedJobs?.map(bookmark => bookmark.job_id) || [];
+      try {
+        const bookmarkedJobIds = user.bookmarkedJobs?.map(bookmark => bookmark.job_id) || [];
 
-      if (searchQuery.trim()) {
-        try {
-          const searchResults = await searchJobs(searchQuery.trim());
-          // Filter search results to only include bookmarked jobs
-          const bookmarkedSearchResults = searchResults.filter(job => bookmarkedJobIds.includes(job._id));
-          setFilteredJobs(bookmarkedSearchResults);
-        } catch (err) {
-          console.error('Error searching jobs:', err);
-          // Fallback to client-side filtering within bookmarked jobs
+        if (searchQuery.trim()) {
+          try {
+            const searchResults = await searchJobs(searchQuery.trim());
+            // Filter search results to only include bookmarked jobs
+            const bookmarkedSearchResults = searchResults.filter(job => bookmarkedJobIds.includes(job._id));
+            setFilteredJobs(bookmarkedSearchResults);
+          } catch (err) {
+            console.warn('Error searching jobs, falling back to client-side search:', err);
+            // Fallback to client-side filtering within bookmarked jobs
+            const bookmarkedJobs = jobs.filter(job => bookmarkedJobIds.includes(job._id));
+            const clientFiltered = bookmarkedJobs.filter(
+              (job) =>
+                job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                job.company_id?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (typeof job.location === 'object' ? job.location.address : job.location)?.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setFilteredJobs(clientFiltered);
+          }
+        } else {
+          // Show all bookmarked jobs when no search query
           const bookmarkedJobs = jobs.filter(job => bookmarkedJobIds.includes(job._id));
-          const clientFiltered = bookmarkedJobs.filter(
-            (job) =>
-              job.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              job.company_id?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              (typeof job.location === 'object' ? job.location.address : job.location)?.toLowerCase().includes(searchQuery.toLowerCase())
-          );
-          setFilteredJobs(clientFiltered);
+          setFilteredJobs(bookmarkedJobs);
         }
-      } else {
-        // Show all bookmarked jobs when no search query
-        const bookmarkedJobs = jobs.filter(job => bookmarkedJobIds.includes(job._id));
-        setFilteredJobs(bookmarkedJobs);
+      } catch (error) {
+        console.warn('Error in search functionality:', error);
+        // Fallback to empty state
+        setFilteredJobs([]);
       }
     };
 
