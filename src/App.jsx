@@ -1,63 +1,8 @@
-// Global error handling for unhandled promise rejections
-window.addEventListener('unhandledrejection', (event) => {
-  console.log('🔧 Unhandled promise rejection detected:', event.reason);
-  
-  // Enhanced browser extension error detection
-  if (event.reason && (
-    event.reason.message && event.reason.message.includes('message channel closed') ||
-    event.reason.message && event.reason.message.includes('message channel was closed') ||
-    event.reason.name && event.reason.name.includes('MessageChannelError') ||
-    event.reason.code === 'ERR_UNHANDLED_PROMISE_REJECTION' ||
-    event.reason.toString().includes('message channel')
-  )) {
-    console.log('✅ Browser extension error suppressed');
-    event.preventDefault(); // Prevent the error from being displayed
-    return;
-  }
-  
-  // Handle fetch-related promise rejections (network errors)
-  if (event.reason && (
-    event.reason.message && event.reason.message.includes('Failed to fetch') ||
-    event.reason.message && event.reason.message.includes('Network request failed') ||
-    event.reason.message && event.reason.message.includes('net::ERR_FAILED')
-  )) {
-    console.log('🔧 Network error handled gracefully:', event.reason.message);
-    event.preventDefault();
-    return;
-  }
-  
-  // Log other unhandled promise rejections for debugging
-  console.warn('⚠️ Unhandled promise rejection:', event.reason);
-});
+// Import comprehensive error suppression
+import { initializeErrorSuppression } from './utils/errorSuppression';
 
-// Global error handling for uncaught errors
-window.addEventListener('error', (event) => {
-  if (event.error && (
-    event.error.message && event.error.message.includes('message channel closed') ||
-    event.error.message && event.error.message.includes('message channel was closed')
-  )) {
-    console.log('✅ Browser extension error suppressed');
-    event.preventDefault();
-    return;
-  }
-});
-
-// Override fetch to handle extension errors gracefully
-const originalFetch = window.fetch;
-window.fetch = function(...args) {
-  return originalFetch.apply(this, args).catch(error => {
-    if (error.message && error.message.includes('message channel closed')) {
-      console.log('🔧 Fetch error suppressed by extension');
-      return Promise.resolve({
-        ok: false,
-        status: 0,
-        statusText: 'Extension Error',
-        json: () => Promise.resolve({ message: 'Extension interference' })
-      });
-    }
-    return Promise.reject(error);
-  });
-};
+// Initialize comprehensive error suppression
+initializeErrorSuppression();
 
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
