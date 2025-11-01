@@ -11,6 +11,7 @@ import {
   Facebook,
   Instagram,
   Trophy,
+  Pencil,
   Trash2,
   Twitter,
   Linkedin,
