@@ -100,22 +100,23 @@ export function SignUpPage({ onSwitchToLogin }) {
     return () => clearTimeout(timer);
   }, [otpCountdown]);
 
-  // Send OTP function
+  // Send OTP function with enhanced error handling and browser extension error suppression
   const handleSendOTP = async () => {
-    if (!formData.email) {
-      alert('Please enter your email address first');
-      return;
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      alert('Please enter a valid email address');
-      return;
-    }
-
-    setOtpLoading(true);
     try {
+      if (!formData.email) {
+        alert('Please enter your email address first');
+        return;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        alert('Please enter a valid email address');
+        return;
+      }
+
+      setOtpLoading(true);
+      
       const response = await fetch(`${API_BASE_URL}/otp/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -129,7 +130,7 @@ export function SignUpPage({ onSwitchToLogin }) {
       }
 
       setOtpSent(true);
-      setOtpCountdown(600); // 10 minutes
+      setOtpCountdown(300); // 5 minutes (reduced from 10)
       setEmailVerificationStep(true);
       
       // Show OTP in alert for testing when email service is unavailable
@@ -139,6 +140,12 @@ export function SignUpPage({ onSwitchToLogin }) {
         alert(data.message || 'OTP sent successfully. Check your email.');
       }
     } catch (error) {
+      // Check if this is a browser extension error
+      if (error.message && error.message.includes('message channel closed')) {
+        console.log('🔧 Browser extension error suppressed during OTP sending');
+        return;
+      }
+      
       console.error('Error sending OTP:', error);
       alert(error.message || 'Failed to send OTP. Please try again.');
     } finally {
@@ -182,11 +189,26 @@ export function SignUpPage({ onSwitchToLogin }) {
     }
   };
 
-  // Resend OTP function
-  const handleResendOTP = () => {
-    setOtp('');
-    setOtpSent(false);
-    handleSendOTP();
+  // Resend OTP function with proper async handling
+  const handleResendOTP = async () => {
+    try {
+      setOtp('');
+      setOtpSent(false);
+      setOtpLoading(true);
+      
+      // Clear previous OTP state
+      setOtpCountdown(0);
+      setEmailVerificationStep(false);
+      setIsEmailVerified(false);
+      
+      // Call send OTP with proper error handling
+      await handleSendOTP();
+    } catch (error) {
+      console.error('Error resending OTP:', error);
+      alert(error.message || 'Failed to resend OTP. Please try again.');
+    } finally {
+      setOtpLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -390,11 +412,17 @@ export function SignUpPage({ onSwitchToLogin }) {
                     {otpCountdown === 0 && (
                       <Button
                         type="button"
-                        onClick={handleResendOTP}
+                        onClick={async () => {
+                          try {
+                            await handleResendOTP();
+                          } catch (error) {
+                            console.error('Resend OTP failed:', error);
+                          }
+                        }}
                         disabled={otpLoading}
                         className="text-blue-600 hover:text-blue-700 text-sm underline"
                       >
-                        Resend OTP
+                        {otpLoading ? 'Sending...' : 'Resend OTP'}
                       </Button>
                     )}
                   </div>

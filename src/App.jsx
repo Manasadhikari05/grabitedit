@@ -1,3 +1,18 @@
+// Global error handling for unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  console.log('🔧 Unhandled promise rejection detected:', event.reason);
+  
+  // Check if it's a browser extension error
+  if (event.reason && event.reason.message && event.reason.message.includes('message channel closed')) {
+    console.log('✅ Browser extension error suppressed');
+    event.preventDefault(); // Prevent the error from being displayed
+    return;
+  }
+  
+  // Log other unhandled promise rejections for debugging
+  console.warn('⚠️ Unhandled promise rejection:', event.reason);
+});
+
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Button } from "./components/ui/button";
@@ -7,6 +22,7 @@ import { Link } from "react-router-dom";
 import { User, LogOut, Settings, Briefcase, FileText } from "lucide-react";
 import Spline from '@splinetool/react-spline';
 import ProfileDropdown from "./components/ProfileDropdown";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Import components
 import { LoginPage } from "./components/LoginPage";
@@ -597,7 +613,7 @@ export default function App() {
   };
 
   return (
-    <>
+    <ErrorBoundary>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage onSwitchToSignUp={() => { window.location.href = "/signup"; }} onLogin={() => { setIsUserAuthenticated(true); window.location.href = "/jobs"; }} />} />
@@ -623,6 +639,6 @@ export default function App() {
       </Routes>
       <Toaster />
       <ChatbotButton />
-    </>
+    </ErrorBoundary>
   );
 }
