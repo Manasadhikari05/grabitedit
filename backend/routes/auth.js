@@ -10,10 +10,7 @@ const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// Store for temporary OTP verification (for new users)
-const tempOTPStore = new Map();
-
-// Send OTP for email verification (supports both new and existing users)
+// Send OTP for email verification
 router.post('/send-otp', async (req, res) => {
   try {
     const { email } = req.body;
@@ -32,29 +29,16 @@ router.post('/send-otp', async (req, res) => {
     const otp = generateOTP();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    // Try to find existing user first
-    let user = await User.findOne({ email });
-    
-    if (user) {
-      // Update existing user with OTP
-      user.emailVerificationToken = otp;
-      user.emailVerificationExpires = otpExpiry;
-      await user.save();
-    } else {
-      // Store OTP temporarily for new users
-      tempOTPStore.set(email, {
-        otp: otp,
-        expiresAt: otpExpiry,
-        timestamp: Date.now()
-      });
-      
-      // Clean up old entries (older than 1 hour)
-      for (const [key, value] of tempOTPStore.entries()) {
-        if (Date.now() - value.timestamp > 3600000) {
-          tempOTPStore.delete(key);
-        }
-      }
+    // Find user by email and update OTP
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found. Please register first.' });
     }
+
+    // Update user with OTP
+    user.emailVerificationToken = otp;
+    user.emailVerificationExpires = otpExpiry;
+    await user.save();
 
     // In a real application, you would send this OTP via email
     // For now, we'll return it in the response (remove this in production)
@@ -64,8 +48,7 @@ router.post('/send-otp', async (req, res) => {
       message: 'OTP sent successfully',
       // Remove this in production - only for testing
       otp: process.env.NODE_ENV === 'development' ? otp : undefined,
-      expiresIn: '10 minutes',
-      isNewUser: !user
+      expiresIn: '10 minutes'
     });
 
   } catch (error) {
@@ -74,7 +57,7 @@ router.post('/send-otp', async (req, res) => {
   }
 });
 
-// Verify OTP (supports both new and existing users)
+// Verify OTP
 router.post('/verify-otp', async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -83,49 +66,29 @@ router.post('/verify-otp', async (req, res) => {
       return res.status(400).json({ message: 'Email and OTP are required' });
     }
 
-    let isNewUser = false;
-    let user = await User.findOne({ email });
-    
-    if (user) {
-      // Check if OTP is valid and not expired for existing user
-      if (user.emailVerificationToken !== otp) {
-        return res.status(400).json({ message: 'Invalid OTP' });
-      }
-
-      if (!user.emailVerificationExpires || user.emailVerificationExpires < new Date()) {
-        return res.status(400).json({ message: 'OTP has expired. Please request a new one.' });
-      }
-
-      // Mark email as verified for existing user
-      user.isEmailVerified = true;
-      user.emailVerificationToken = '';
-      user.emailVerificationExpires = null;
-      await user.save();
-    } else {
-      // Check temporary store for new users
-      const tempData = tempOTPStore.get(email);
-      if (!tempData) {
-        return res.status(400).json({ message: 'No OTP request found for this email' });
-      }
-
-      if (tempData.otp !== otp) {
-        return res.status(400).json({ message: 'Invalid OTP' });
-      }
-
-      if (tempData.expiresAt < new Date()) {
-        tempOTPStore.delete(email);
-        return res.status(400).json({ message: 'OTP has expired. Please request a new one.' });
-      }
-
-      // Clean up the temporary OTP
-      tempOTPStore.delete(email);
-      isNewUser = true;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+
+    // Check if OTP is valid and not expired
+    if (user.emailVerificationToken !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    if (!user.emailVerificationExpires || user.emailVerificationExpires < new Date()) {
+      return res.status(400).json({ message: 'OTP has expired. Please request a new one.' });
+    }
+
+    // Mark email as verified
+    user.isEmailVerified = true;
+    user.emailVerificationToken = '';
+    user.emailVerificationExpires = null;
+    await user.save();
 
     return res.json({
       message: 'Email verified successfully',
-      emailVerified: true,
-      isNewUser: isNewUser
+      emailVerified: true
     });
 
   } catch (error) {
