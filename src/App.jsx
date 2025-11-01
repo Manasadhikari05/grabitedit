@@ -27,15 +27,37 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
+    const checkAuth = () => {
+      const storedUser = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
 
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
-    }
+      if (storedUser && token) {
+        setUser(JSON.parse(storedUser));
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+      setAuthChecked(true);
+    };
+
+    checkAuth();
+
+    // Listen for storage changes to update auth state
+    const handleStorageChange = (e) => {
+      if (e.key === 'user' || e.key === 'token') {
+        checkAuth();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const logout = () => {
@@ -531,6 +553,7 @@ const HomePage = () => {
 export default function App() {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Check authentication on app load and route changes
   useEffect(() => {
@@ -540,6 +563,7 @@ export default function App() {
 
       setIsUserAuthenticated(!!userToken);
       setIsAdminAuthenticated(!!adminToken);
+      setAuthChecked(true);
     };
 
     // Check immediately on mount
@@ -561,6 +585,11 @@ export default function App() {
 
   // Protected Route Component
   const ProtectedRoute = ({ children }) => {
+    // Don't redirect until we've checked authentication status
+    if (!authChecked) {
+      return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    }
+    
     if (!isUserAuthenticated) {
       return <Navigate to="/login" replace />;
     }
@@ -576,7 +605,7 @@ export default function App() {
         <Route path="/jobs" element={<ProtectedRoute><JobSearchPage /></ProtectedRoute>} />
         <Route path="/interests" element={<ProtectedRoute><MyInterestsPage /></ProtectedRoute>} />
         <Route path="/discussions" element={<ProtectedRoute><DiscussionsPage /></ProtectedRoute>} />
-        <Route path="/contact" element={<ProtectedRoute><ContactPage /></ProtectedRoute>} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
 
         <Route
