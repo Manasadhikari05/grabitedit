@@ -1,8 +1,13 @@
 // Import comprehensive error suppression
 import { initializeErrorSuppression } from './utils/errorSuppression';
+import { initializeUltimateErrorBlocker, suppressPromiseWarnings } from './utils/ultimateErrorBlocker';
 
 // Initialize comprehensive error suppression
 initializeErrorSuppression();
+
+// Initialize ULTIMATE error blocker (runs immediately)
+initializeUltimateErrorBlocker();
+suppressPromiseWarnings();
 
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
