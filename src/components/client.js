@@ -1,5 +1,5 @@
 export const API_BASE_URL = import.meta.env.PROD
-  ? 'http://localhost:5001/api'  // Use localhost for now until proper backend deployment
+  ? 'https://grabitedit-1.onrender.com/api'  // Use deployed backend for production
   : 'http://localhost:5001/api';
 
 export const fetchJobs = async (userSkills = []) => {
