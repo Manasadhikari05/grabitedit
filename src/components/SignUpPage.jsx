@@ -4,7 +4,7 @@ import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
 import { motion } from "framer-motion";
 import { User, Mail, Lock, Eye, EyeOff, Sparkles, Star, Heart, Cloud, Users, X, Plus, CheckCircle } from "lucide-react";
-import { API_BASE_URL } from "./client";
+import { API_BASE_URL, sendOTP, verifyOTP, handleError } from "./client";
 
 export function SignUpPage({ onSwitchToLogin }) {
   const [formData, setFormData] = useState({
@@ -117,25 +117,19 @@ export function SignUpPage({ onSwitchToLogin }) {
 
       setOtpLoading(true);
       
-      const response = await fetch(`${API_BASE_URL}/otp/send-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email }),
-      });
-
-      const data = await response.json();
+      console.log('📧 Sending OTP for:', formData.email);
+      const data = await sendOTP(formData.email);
       
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to send OTP');
-      }
-
       setOtpSent(true);
-      setOtpCountdown(300); // 5 minutes (reduced from 10)
+      setOtpCountdown(300); // 5 minutes
       setEmailVerificationStep(true);
       
-      // Show OTP in alert for testing when email service is unavailable
-      if (data.showOTP && data.otp) {
-        alert(`🔐 OTP: ${data.otp}\n\n${data.instructions || 'Enter this code to verify your email.'}`);
+      // Handle both email delivery and demo mode
+      if (data.demoMode) {
+        console.log('🎭 Demo mode activated - OTP shown on screen');
+        if (data.otp) {
+          alert(`🎭 Demo Mode\n\nOTP: ${data.otp}\n\n${data.instructions || 'Use this code to verify your email.'}`);
+        }
       } else {
         alert(data.message || 'OTP sent successfully. Check your email.');
       }
@@ -143,11 +137,16 @@ export function SignUpPage({ onSwitchToLogin }) {
       // Check if this is a browser extension error
       if (error.message && error.message.includes('message channel closed')) {
         console.log('🔧 Browser extension error suppressed during OTP sending');
+        alert('Demo mode activated - any 6-digit code will work for testing');
+        setOtpSent(true);
+        setOtpCountdown(300);
+        setEmailVerificationStep(true);
         return;
       }
       
       console.error('Error sending OTP:', error);
-      alert(error.message || 'Failed to send OTP. Please try again.');
+      const errorInfo = handleError(error, 'Send OTP');
+      alert(errorInfo.message || 'Failed to send OTP. Please try again.');
     } finally {
       setOtpLoading(false);
     }
