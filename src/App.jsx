@@ -1,13 +1,17 @@
-// Import comprehensive error suppression
-import { initializeErrorSuppression } from './utils/errorSuppression';
-import { initializeUltimateErrorBlocker, suppressPromiseWarnings } from './utils/ultimateErrorBlocker';
-
-// Initialize comprehensive error suppression
-initializeErrorSuppression();
-
-// Initialize ULTIMATE error blocker (runs immediately)
-initializeUltimateErrorBlocker();
-suppressPromiseWarnings();
+// Global error handling for unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  console.log('🔧 Unhandled promise rejection detected:', event.reason);
+  
+  // Check if it's a browser extension error
+  if (event.reason && event.reason.message && event.reason.message.includes('message channel closed')) {
+    console.log('✅ Browser extension error suppressed');
+    event.preventDefault(); // Prevent the error from being displayed
+    return;
+  }
+  
+  // Log other unhandled promise rejections for debugging
+  console.warn('⚠️ Unhandled promise rejection:', event.reason);
+});
 
 import { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";

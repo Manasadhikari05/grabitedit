@@ -117,36 +117,20 @@ export function SignUpPage({ onSwitchToLogin }) {
 
       setOtpLoading(true);
       
-      // Add timeout to prevent hanging
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-      
       const response = await fetch(`${API_BASE_URL}/otp/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email }),
-        signal: controller.signal
       });
-
-      clearTimeout(timeoutId);
-
-      // Check if request was aborted due to timeout
-      if (!response.ok && response.status === 0) {
-        throw new Error('Request timeout. Please check your internet connection and try again.');
-      }
 
       const data = await response.json();
       
       if (!response.ok) {
-        // Handle specific backend errors gracefully
-        if (data.message && data.message.includes('Connection timeout')) {
-          throw new Error('Email service temporarily unavailable. Please try again in a few minutes.');
-        }
         throw new Error(data.message || 'Failed to send OTP');
       }
 
       setOtpSent(true);
-      setOtpCountdown(300); // 5 minutes
+      setOtpCountdown(300); // 5 minutes (reduced from 10)
       setEmailVerificationStep(true);
       
       // Show OTP in alert for testing when email service is unavailable
@@ -156,22 +140,9 @@ export function SignUpPage({ onSwitchToLogin }) {
         alert(data.message || 'OTP sent successfully. Check your email.');
       }
     } catch (error) {
-      // Enhanced browser extension error detection
-      if (
-        error.message && error.message.includes('message channel closed') ||
-        error.name === 'AbortError' ||
-        error.message && error.message.includes('Failed to fetch') ||
-        error.message && error.message.includes('Network request failed')
-      ) {
-        console.log('🔧 Network/extension error suppressed during OTP sending');
-        
-        // Generate a demo OTP for testing purposes when backend is unavailable
-        const demoOTP = Math.floor(100000 + Math.random() * 900000).toString();
-        setOtpSent(true);
-        setOtpCountdown(300);
-        setEmailVerificationStep(true);
-        
-        alert(`🔐 Demo OTP: ${demoOTP}\n\n(Backend service temporarily unavailable. This is a demo code for testing purposes.)`);
+      // Check if this is a browser extension error
+      if (error.message && error.message.includes('message channel closed')) {
+        console.log('🔧 Browser extension error suppressed during OTP sending');
         return;
       }
       
@@ -218,7 +189,7 @@ export function SignUpPage({ onSwitchToLogin }) {
     }
   };
 
-  // Resend OTP function with proper async handling and enhanced error recovery
+  // Resend OTP function with proper async handling
   const handleResendOTP = async () => {
     try {
       setOtp('');
@@ -230,27 +201,9 @@ export function SignUpPage({ onSwitchToLogin }) {
       setEmailVerificationStep(false);
       setIsEmailVerified(false);
       
-      // Use the same enhanced error handling from handleSendOTP
+      // Call send OTP with proper error handling
       await handleSendOTP();
     } catch (error) {
-      // Enhanced error handling for resend operations
-      if (
-        error.message && error.message.includes('message channel closed') ||
-        error.name === 'AbortError' ||
-        error.message && error.message.includes('Failed to fetch')
-      ) {
-        console.log('🔧 Extension/network error suppressed during OTP resend');
-        
-        // Provide demo OTP for testing when service is unavailable
-        const demoOTP = Math.floor(100000 + Math.random() * 900000).toString();
-        setOtpSent(true);
-        setOtpCountdown(300);
-        setEmailVerificationStep(true);
-        
-        alert(`🔐 Demo OTP: ${demoOTP}\n\n(Backend service temporarily unavailable. This is a demo code for testing purposes.)`);
-        return;
-      }
-      
       console.error('Error resending OTP:', error);
       alert(error.message || 'Failed to resend OTP. Please try again.');
     } finally {
