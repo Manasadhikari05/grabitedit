@@ -1,6 +1,7 @@
 const express = require('express');
 const User = require('../models/User');
 const otpEmailService = require('../services/otpEmail');
+const fallbackEmailService = require('../services/fallbackEmail');
 
 const router = express.Router();
 
@@ -29,7 +30,7 @@ router.post('/send-otp', async (req, res) => {
       });
     }
 
-    // Validate email format
+    // Enhanced email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -37,6 +38,8 @@ router.post('/send-otp', async (req, res) => {
         message: 'Please enter a valid email address'
       });
     }
+
+    console.log(`📧 Processing OTP request for: ${email}`);
 
     // Check if user exists, if not create a temporary record
     let user = await User.findOne({ email: email.toLowerCase() });
@@ -60,9 +63,25 @@ router.post('/send-otp', async (req, res) => {
     user.otpExpires = null;
     user.isVerified = false;
 
-    // Generate and store new OTP
+    // Send OTP via primary service (Gmail)
     const otpResult = await otpEmailService.sendOTP(email, 'User');
-    const otp = otpResult.otp;
+    let finalResult = otpResult;
+
+    // If Gmail failed and SendGrid is configured, try fallback
+    if (!otpResult.success && process.env.SENDGRID_API_KEY) {
+      console.log('🔄 Trying SendGrid fallback...');
+      const fallbackResult = await fallbackEmailService.sendOTP(email, 'User');
+      
+      if (fallbackResult.success) {
+        finalResult = {
+          ...fallbackResult,
+          fallbackUsed: true,
+          originalError: otpResult.error
+        };
+      }
+    }
+
+    const otp = finalResult.otp;
 
     // Store OTP in database with 5-minute expiry
     user.otp = otp;
@@ -72,6 +91,10 @@ router.post('/send-otp', async (req, res) => {
 
     await user.save();
 
+    // Enhanced logging with provider information
+    const provider = finalResult.fallbackUsed ? 'SendGrid' : 'Gmail';
+    const emailSent = finalResult.emailSent || finalResult.provider === 'SendGrid';
+    
     console.log('\n==========================================');
     console.log('🔐 OTP GENERATED AND STORED');
     console.log('==========================================');
@@ -80,36 +103,45 @@ router.post('/send-otp', async (req, res) => {
     console.log('⏰ Expires:', user.otpExpires.toLocaleString());
     console.log('👤 User Type:', isNewUser ? 'NEW' : 'EXISTING');
     console.log('💾 Stored in MongoDB: YES');
-    console.log('📧 Email Sent:', otpResult.success ? 'YES' : 'NO');
+    console.log('📧 Email Sent:', emailSent ? 'YES' : 'NO');
+    console.log('🌐 Provider:', provider);
+    console.log('📧 Message ID:', finalResult.messageId || 'N/A');
     console.log('==========================================\n');
 
     // Response based on email sending success
-    if (otpResult.success) {
+    if (finalResult.success) {
       res.json({
         success: true,
-        message: 'OTP sent successfully to your email. Check your inbox.',
-        emailSent: true,
-        showOTP: false, // Don't show OTP since email was sent
-        expiresIn: '5 minutes',
-        isNewUser: isNewUser
-      });
-    } else {
-      // Fallback: Show OTP for testing when email fails
-      res.json({
-        success: true,
-        message: 'OTP generated successfully. Check the server console for the OTP code.',
-        emailSent: false,
-        showOTP: true, // Show OTP since email failed
-        otp: otp, // Include OTP for testing
+        message: finalResult.fallbackUsed 
+          ? `OTP sent successfully via ${provider}` 
+          : 'OTP sent successfully to your email. Check your inbox.',
+        emailSent: emailSent,
+        showOTP: !emailSent,
         expiresIn: '5 minutes',
         isNewUser: isNewUser,
-        consoleOTP: true,
-        instructions: 'Email service unavailable. Check server console for OTP.'
+        provider: provider,
+        fallbackUsed: finalResult.fallbackUsed,
+        messageId: finalResult.messageId,
+        instructions: !emailSent ? `Enter this code: ${otp}` : undefined
+      });
+    } else {
+      // All email services failed - show troubleshooting info
+      res.status(500).json({
+        success: false,
+        message: 'Failed to send OTP via all available services',
+        error: finalResult.error,
+        troubleshooting: [
+          'Check Gmail App Password configuration',
+          'Verify 2-factor authentication is enabled on Gmail',
+          'Check spam/promotions folder for emails',
+          'Try SendGrid for production deployment',
+          'Verify environment variables are set correctly'
+        ]
       });
     }
 
   } catch (error) {
-    console.error('Error in /send-otp:', error);
+    console.error('❌ Send OTP error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to send OTP. Please try again.',
@@ -138,6 +170,8 @@ router.post('/verify-otp', async (req, res) => {
         message: 'OTP must be a 6-digit number'
       });
     }
+
+    console.log(`🔍 Verifying OTP for: ${email}`);
 
     // Find user by email
     const user = await User.findOne({ email: email.toLowerCase() });
@@ -205,7 +239,7 @@ router.post('/verify-otp', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error in /verify-otp:', error);
+    console.error('❌ Verify OTP error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to verify OTP. Please try again.',
@@ -277,32 +311,99 @@ router.get('/otp-status/:email', async (req, res) => {
   }
 });
 
-// Test email configuration endpoint
-router.get('/test-email-config', async (req, res) => {
+// Enhanced test email configuration endpoint
+router.get('/test-connection', async (req, res) => {
   try {
-    const envValid = validateEnvironment();
-    let smtpValid = false;
-
-    if (envValid) {
-      smtpValid = await otpEmailService.testConnection();
+    console.log('🔍 Testing email service connections...');
+    
+    // Test Gmail connection
+    const gmailTest = await otpEmailService.testConnection();
+    
+    // Test SendGrid if available
+    let sendgridTest = { available: false };
+    if (process.env.SENDGRID_API_KEY) {
+      try {
+        sendgridTest = {
+          available: true,
+          message: 'SendGrid API key configured',
+          messageCount: '100 emails/day (free tier)'
+        };
+      } catch (error) {
+        sendgridTest = {
+          available: false,
+          error: error.message
+        };
+      }
     }
+
+    // Get configuration status
+    const configStatus = otpEmailService.getConfigurationStatus();
 
     res.json({
       success: true,
-      data: {
-        environmentConfigured: envValid,
-        smtpConnectionValid: smtpValid,
-        gmailEmail: process.env.GMAIL_EMAIL ? 'Set' : 'Not Set',
-        timestamp: new Date().toISOString()
-      },
-      message: envValid && smtpValid ? 'Email configuration is valid' : 'Email configuration needs attention'
+      gmail: gmailTest,
+      sendgrid: sendgridTest,
+      configuration: configStatus,
+      environment: {
+        NODE_ENV: process.env.NODE_ENV,
+        hasGmailEmail: !!process.env.GMAIL_EMAIL,
+        hasGmailPassword: !!process.env.GMAIL_APP_PASSWORD,
+        hasSendGridKey: !!process.env.SENDGRID_API_KEY
+      }
     });
 
   } catch (error) {
-    console.error('Error in /test-email-config:', error);
+    console.error('❌ Connection test error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to test email configuration',
+      message: 'Connection test failed',
+      error: error.message
+    });
+  }
+});
+
+// Delete OTP endpoint (for clearing verification status)
+router.delete('/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+
+    console.log(`🗑️ Clearing OTP for: ${email}`);
+
+    try {
+      const user = await User.findOne({ email: email.toLowerCase() });
+      
+      if (user) {
+        user.otp = null;
+        user.otpExpires = null;
+        user.isVerified = false;
+        await user.save();
+      }
+
+      return res.json({
+        success: true,
+        message: 'OTP cleared successfully'
+      });
+
+    } catch (error) {
+      console.error('❌ Database clear error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Database error during clear operation'
+      });
+    }
+
+  } catch (error) {
+    console.error('❌ Clear OTP error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
       error: error.message
     });
   }
