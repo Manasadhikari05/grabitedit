@@ -116,7 +116,7 @@ export function SignUpPage({ onSwitchToLogin }) {
 
     setOtpLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+      const response = await fetch(`${API_BASE_URL}/otp/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email }),
@@ -125,18 +125,22 @@ export function SignUpPage({ onSwitchToLogin }) {
       const data = await response.json();
       
       if (!response.ok) {
-        alert(data.message || 'Failed to send OTP');
-        setOtpLoading(false);
-        return;
+        throw new Error(data.message || 'Failed to send OTP');
       }
 
       setOtpSent(true);
       setOtpCountdown(600); // 10 minutes
       setEmailVerificationStep(true);
-      alert(data.message + (data.otp ? ` (OTP: ${data.otp} - Development mode only)` : ''));
+      
+      // Show OTP in alert for testing when email service is unavailable
+      if (data.showOTP && data.otp) {
+        alert(`🔐 OTP: ${data.otp}\n\n${data.instructions || 'Enter this code to verify your email.'}`);
+      } else {
+        alert(data.message || 'OTP sent successfully. Check your email.');
+      }
     } catch (error) {
       console.error('Error sending OTP:', error);
-      alert('Network error. Please try again.');
+      alert(error.message || 'Failed to send OTP. Please try again.');
     } finally {
       setOtpLoading(false);
     }
@@ -151,7 +155,7 @@ export function SignUpPage({ onSwitchToLogin }) {
 
     setOtpLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+      const response = await fetch(`${API_BASE_URL}/otp/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -163,9 +167,7 @@ export function SignUpPage({ onSwitchToLogin }) {
       const data = await response.json();
       
       if (!response.ok) {
-        alert(data.message || 'Invalid OTP');
-        setOtpLoading(false);
-        return;
+        throw new Error(data.message || 'Invalid OTP');
       }
 
       setIsEmailVerified(true);
@@ -174,7 +176,7 @@ export function SignUpPage({ onSwitchToLogin }) {
       alert('Email verified successfully!');
     } catch (error) {
       console.error('Error verifying OTP:', error);
-      alert('Network error. Please try again.');
+      alert(error.message || 'Failed to verify OTP. Please try again.');
     } finally {
       setOtpLoading(false);
     }
@@ -189,27 +191,24 @@ export function SignUpPage({ onSwitchToLogin }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
-      setIsLoading(false);
-      return;
-    }
-
-    if (selectedInterests.length < 3) {
-      alert('Please select at least 3 jobs');
-      setIsLoading(false);
-      return;
-    }
-
-    if (!isEmailVerified) {
-      alert('Please verify your email first');
-      setIsLoading(false);
-      return;
-    }
-
+    
     try {
+      setIsLoading(true);
+
+      // Validation checks
+      if (formData.password !== formData.confirmPassword) {
+        throw new Error('Passwords do not match');
+      }
+
+      if (selectedInterests.length < 3) {
+        throw new Error('Please select at least 3 jobs');
+      }
+
+      if (!isEmailVerified) {
+        throw new Error('Please verify your email first');
+      }
+
+      // Registration API call
       const res = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -226,24 +225,23 @@ export function SignUpPage({ onSwitchToLogin }) {
       if (!res.ok) {
         const errorData = await res.json();
         if (errorData.emailVerificationRequired) {
-          alert('Please verify your email before registering');
-          setIsEmailVerified(false);
-          setEmailVerificationStep(true);
+          throw new Error('Please verify your email before registering');
         } else {
-          alert(errorData.message || 'Registration failed');
+          throw new Error(errorData.message || 'Registration failed');
         }
-        setIsLoading(false);
-        return;
       }
 
       const data = await res.json();
       alert('Registration successful. Please sign in.');
-      setIsLoading(false);
+      
+      // Redirect to login
       if (onSwitchToLogin) onSwitchToLogin();
+
     } catch (err) {
       console.error('Registration error:', err);
+      alert(err.message || 'Registration failed. Please try again.');
+    } finally {
       setIsLoading(false);
-      alert('Network error. Please try again.');
     }
   };
 
