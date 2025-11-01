@@ -99,7 +99,7 @@ export function SmartInsights({ onJobClick }) {
 
         if (combinedKeywords.length > 0) {
           // Fetch jobs with skill matching
-          const response = await fetch(`${API_BASE_URL}/api/jobs?skills=${encodeURIComponent(combinedKeywords.join(','))}`);
+          const response = await fetch(`${API_BASE_URL}/jobs?skills=${encodeURIComponent(combinedKeywords.join(','))}`);
           console.log('API response status:', response.status);
           if (response.ok) {
             const data = await response.json();

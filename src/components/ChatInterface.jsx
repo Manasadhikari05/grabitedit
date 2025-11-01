@@ -58,7 +58,7 @@ export function ChatInterface() {
     const fetchData = async () => {
       try {
         // Fetch jobs
-        const jobsResponse = await fetch(`${API_BASE_URL}/api/jobs`);
+        const jobsResponse = await fetch(`${API_BASE_URL}/jobs`);
         if (jobsResponse.ok) {
           const jobsResult = await jobsResponse.json();
           setJobsData(jobsResult.jobs || []);

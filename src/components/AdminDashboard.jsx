@@ -71,7 +71,7 @@ export function AdminDashboard({ onLogout }) {
   const fetchCompanies = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/companies`);
+      const response = await fetch(`${API_BASE_URL}/companies`);
       const data = await response.json();
 
       if (data.success) {
@@ -95,7 +95,7 @@ export function AdminDashboard({ onLogout }) {
 
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/companies/${companyId}`, {
+      const response = await fetch(`${API_BASE_URL}/companies/${companyId}`, {
         method: 'DELETE',
       });
 
@@ -193,7 +193,7 @@ export function AdminDashboard({ onLogout }) {
         size: companySize
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/companies`, {
+      const response = await fetch(`${API_BASE_URL}/companies`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -266,7 +266,7 @@ export function AdminDashboard({ onLogout }) {
         application_link: applicationLink,
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/jobs`, {
+      const response = await fetch(`${API_BASE_URL}/jobs`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -311,7 +311,7 @@ export function AdminDashboard({ onLogout }) {
   // Fetch jobs from database
   const fetchJobs = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/jobs`);
+      const response = await fetch(`${API_BASE_URL}/jobs`);
       const data = await response.json();
 
       if (data.success) {
@@ -333,7 +333,7 @@ export function AdminDashboard({ onLogout }) {
 
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}`, {
+      const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
         method: 'DELETE',
       });
 
