@@ -145,7 +145,7 @@ export function AdminDashboard({ onLogout }) {
         formData.append('image', file);
 
         // Upload to Cloudinary via backend
-        const response = await fetch(`${API_BASE_URL}/api/upload/image`, {
+        const response = await fetch(`${API_BASE_URL}/upload/image`, {
           method: 'POST',
           body: formData,
         });

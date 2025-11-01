@@ -238,7 +238,7 @@ export function MyProfile() {
 
     try {
       const token = localStorage.getItem('token');
-      const uploadResponse = await fetch(`${API_BASE_URL}/api/upload/image`, {
+      const uploadResponse = await fetch(`${API_BASE_URL}/upload/image`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
