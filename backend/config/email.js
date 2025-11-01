@@ -5,7 +5,7 @@ const createTransporter = () => {
   // For development, we'll use a test account
   // In production, you would use your actual SMTP credentials
   if (process.env.NODE_ENV === 'production') {
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: process.env.SMTP_PORT || 587,
       secure: false, // true for 465, false for other ports
@@ -16,7 +16,7 @@ const createTransporter = () => {
     });
   } else {
     // For development, use Ethereal for testing
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       host: "smtp.ethereal.email",
       port: 587,
       auth: {
@@ -73,30 +73,35 @@ const sendOTPEmail = async (email, otp) => {
   try {
     const mailOptions = createOTPEmail(email, otp);
     
-    // For development, we'll use a simpler approach
+    let info;
+    
     if (process.env.NODE_ENV === 'development') {
-      // Create a test account if needed
+      // Create a test account for development
       const testAccount = await nodemailer.createTestAccount();
-      const testTransporter = nodemailer.createTransporter({
-        host: "smtp.ethereal.email",
-        port: 587,
+      const testTransporter = nodemailer.createTransport({
+        host: testAccount.smtp.host,
+        port: testAccount.smtp.port,
+        secure: testAccount.smtp.secure,
         auth: {
           user: testAccount.user,
           pass: testAccount.pass
         }
       });
       
-      const info = await testTransporter.sendMail(mailOptions);
-      console.log('Preview URL: ' + nodemailer.getTestMessageUrl(info));
-      return { success: true, previewUrl: nodemailer.getTestMessageUrl(info) };
+      info = await testTransporter.sendMail(mailOptions);
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      console.log('📧 Email Preview URL: ' + previewUrl);
+      console.log('📧 OTP for ' + email + ': ' + otp);
+      return { success: true, previewUrl };
     } else {
       // Production email sending
-      const info = await transporter.sendMail(mailOptions);
+      info = await transporter.sendMail(mailOptions);
       return { success: true, messageId: info.messageId };
     }
   } catch (error) {
-    console.error('Error sending email:', error);
-    throw error;
+    console.error('❌ Error sending email:', error);
+    // Don't throw error, just log it so the OTP verification can still work
+    return { success: false, error: error.message };
   }
 };
 

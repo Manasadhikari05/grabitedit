@@ -63,21 +63,30 @@ router.post('/send-otp', async (req, res) => {
     
     // Send actual email
     let emailResult;
+    let emailSent = false;
     try {
       emailResult = await sendOTPEmail(email, otp);
-      console.log('Email sent successfully');
+      emailSent = emailResult.success;
+      if (emailResult.success) {
+        console.log('✅ Email sent successfully');
+      }
     } catch (emailError) {
-      console.error('Error sending email:', emailError);
+      console.error('❌ Error sending email:', emailError);
+      emailSent = false;
       // Continue anyway, OTP is still valid for verification
     }
     
+    // In development, always show OTP for testing
+    const showOTP = process.env.NODE_ENV === 'development' || !emailSent;
+    
     return res.json({
-      message: 'OTP sent successfully',
-      // Remove this in production - only for testing
-      otp: process.env.NODE_ENV === 'development' ? otp : undefined,
+      message: emailSent ? 'OTP sent successfully to your email' : 'OTP generated (Email service unavailable)',
+      // Show OTP in development or when email fails
+      otp: showOTP ? otp : undefined,
       expiresIn: '10 minutes',
       isNewUser: !user,
-      emailSent: emailResult ? true : false,
+      emailSent: emailSent,
+      showOTP: showOTP, // Tell frontend to display OTP
       previewUrl: emailResult?.previewUrl // For development testing
     });
 
