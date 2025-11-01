@@ -163,7 +163,7 @@ export function Dashboard() {
 
       const userData = JSON.parse(storedUser);
       const bookmarkedJobIds = userData.bookmarkedJobs?.map(bookmark => bookmark.job_id) || [];
-      const response = await fetch(`${API_BASE_URL}/jobs/expiring/today/${user.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/jobs/expiring/today/${user.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

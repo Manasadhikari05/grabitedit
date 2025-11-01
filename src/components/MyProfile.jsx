@@ -179,7 +179,7 @@ export function MyProfile() {
   const handleSave = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -238,7 +238,7 @@ export function MyProfile() {
 
     try {
       const token = localStorage.getItem('token');
-      const uploadResponse = await fetch(`${API_BASE_URL}/upload/image`, {
+      const uploadResponse = await fetch(`${API_BASE_URL}/api/upload/image`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -285,7 +285,7 @@ export function MyProfile() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/auth/account/${user?.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/account/${user?.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

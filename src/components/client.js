@@ -1,6 +1,6 @@
 export const API_BASE_URL = import.meta.env.PROD
   ? 'https://grabitedit-1.onrender.com/api'
-  : 'http://localhost:5000/api';
+  : 'http://localhost:5001/api';
 
 export const fetchJobs = async (userSkills = []) => {
   try {

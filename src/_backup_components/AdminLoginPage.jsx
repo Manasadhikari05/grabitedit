@@ -14,11 +14,6 @@ export function AdminLoginPage({ onLoginSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Use dynamic API base URL
-  const API_BASE_URL = import.meta.env.PROD
-    ? 'https://grabitedit-1.onrender.com/api'
-    : 'http://localhost:5000/api';
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -33,7 +28,7 @@ export function AdminLoginPage({ onLoginSuccess }) {
     setError("");
 
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/login`, {
+      const response = await fetch("http://localhost:5001/api/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
