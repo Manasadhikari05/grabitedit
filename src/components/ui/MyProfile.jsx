@@ -11,7 +11,6 @@ import {
   Facebook,
   Instagram,
   Trophy,
-  Pencil,
   Trash2,
   Twitter,
   Linkedin,
@@ -349,65 +348,6 @@ export function MyProfile() {
     setIsEditing(false);
   };
 
-  const handleImageUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file');
-      return;
-    }
-
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      const token = localStorage.getItem('token');
-      const uploadResponse = await fetch(`${API_BASE_URL}/api/upload/image`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      const uploadResult = await uploadResponse.json();
-
-      // Update profile with new image URL
-      const updateResponse = await fetch(`${API_BASE_URL}/auth/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ profileImage: uploadResult.imageUrl })
-      });
-
-      if (updateResponse.ok) {
-        const updateResult = await updateResponse.json();
-        setUser(updateResult.user);
-        localStorage.setItem('user', JSON.stringify(updateResult.user));
-        alert('Profile picture updated successfully!');
-      } else {
-        throw new Error('Failed to update profile');
-      }
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      alert('Failed to upload image. Please try again.');
-    }
-  };
-
   const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm(
       'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.'
@@ -549,22 +489,6 @@ export function MyProfile() {
                             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                           </AvatarFallback>
                         </Avatar>
-                        {/* Upload Button */}
-                        <button
-                          onClick={() => document.getElementById('profile-image-upload').click()}
-                          className="absolute bottom-0 right-0 bg-[#6366F1] hover:bg-[#5558E3] text-white p-2 rounded-full shadow-lg"
-                          title="Change Profile Picture"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        {/* Hidden File Input */}
-                        <input
-                          id="profile-image-upload"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                        />
                       </div>
                     </div>
 
