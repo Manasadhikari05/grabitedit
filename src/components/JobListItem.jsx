@@ -72,7 +72,7 @@ export function JobListItem({
       // Update localStorage with fresh user data after bookmark
       const updateLocalStorage = async () => {
         try {
-          const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+          const response = await fetch(`${API_BASE_URL}/auth/profile`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
