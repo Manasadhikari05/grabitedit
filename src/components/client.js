@@ -1,6 +1,16 @@
-export const API_BASE_URL = import.meta.env.PROD
-  ? 'http://localhost:5001/api'  // Use localhost for now until proper backend deployment
-  : 'http://localhost:5001/api';
+// Smart API URL detection - automatically uses deployed backend for production
+export const API_BASE_URL = (() => {
+  const currentHost = window.location.hostname;
+  
+  // If we're accessing from a different machine (not localhost), use deployed backend
+  if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+    // Use the deployed backend for non-localhost access
+    return 'https://grabitedit-1.onrender.com/api';
+  }
+  
+  // Development mode - use localhost
+  return 'http://localhost:5001/api';
+})();
 
 export const fetchJobs = async (userSkills = []) => {
   try {
