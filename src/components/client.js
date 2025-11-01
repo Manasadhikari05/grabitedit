@@ -403,12 +403,32 @@ export const trackJobView = async (jobId) => {
         console.error('Error updating localStorage:', error);
       }
     };
-
+    
     await updateLocalStorage();
 
     return data;
   } catch (error) {
     console.error('Error tracking job view:', error);
     throw error;
+  }
+};
+
+export const fetchCompanyByName = async (companyName) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/companies`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch companies');
+    }
+    const data = await response.json();
+    
+    // Find company by name
+    const company = data.companies?.find(c =>
+      c.name?.toLowerCase() === companyName?.toLowerCase()
+    );
+    
+    return company || null;
+  } catch (error) {
+    console.error('Error fetching company:', error);
+    return null;
   }
 };

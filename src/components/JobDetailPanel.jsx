@@ -2,7 +2,7 @@ import { MapPin, ExternalLink, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { useState, useEffect, useRef } from "react";
-import { applyForJob, trackJobView } from "./client";
+import { applyForJob, trackJobView, fetchCompanyByName } from "./client";
 
 export function JobDetailPanel({
   companyName,
@@ -20,11 +20,12 @@ export function JobDetailPanel({
   applicationLink,
 }) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [companyData, setCompanyData] = useState(null);
   const hasTrackedView = useRef(false);
 
-  // Track job view when component mounts (only once per job view)
+  // Track job view and fetch company data when component mounts
   useEffect(() => {
-    const trackView = async () => {
+    const initializeData = async () => {
       if (hasTrackedView.current) return; // Prevent multiple calls
 
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -37,9 +38,17 @@ export function JobDetailPanel({
           hasTrackedView.current = false; // Reset on error to allow retry
         }
       }
+
+      // Fetch company data
+      try {
+        const company = await fetchCompanyByName(companyName);
+        setCompanyData(company);
+      } catch (error) {
+        console.error('Error fetching company data:', error);
+      }
     };
-    trackView();
-  }, [jobId]); // Include jobId in dependency array to track when job changes
+    initializeData();
+  }, [jobId, companyName]); // Include jobId and companyName in dependency array
 
   const openInMaps = (e) => {
     e.stopPropagation();
@@ -153,7 +162,73 @@ export function JobDetailPanel({
         </TabsContent>
 
         <TabsContent value="company" className="flex-1 overflow-auto mt-0">
-          <p className="text-gray-600">Company information will be displayed here.</p>
+          <div className="space-y-6">
+            {companyData ? (
+              <>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
+                    <img
+                      src={companyData.logo || "https://images.unsplash.com/photo-1637489981573-e45e9297cb21?w=100&h=100&fit=crop"}
+                      alt={companyData.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = "https://images.unsplash.com/photo-1637489981573-e45e9297cb21?w=100&h=100&fit=crop";
+                      }}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold mb-1">{companyData.name}</h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <MapPin className="w-4 h-4" />
+                      <span>{companyData.location?.address || location}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-lg font-semibold mb-3">About {companyData.name}</h4>
+                  <div className="text-gray-600 text-sm whitespace-pre-line">
+                    {companyData.description || "No description available for this company."}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {companyData.industry && (
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h5 className="text-sm font-semibold text-gray-700 mb-1">Industry</h5>
+                      <p className="text-gray-600 text-sm">{companyData.industry}</p>
+                    </div>
+                  )}
+                  
+                  {companyData.size && (
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <h5 className="text-sm font-semibold text-gray-700 mb-1">Company Size</h5>
+                      <p className="text-gray-600 text-sm">{companyData.size} employees</p>
+                    </div>
+                  )}
+                </div>
+
+                {companyData.website && (
+                  <div>
+                    <h4 className="text-lg font-semibold mb-3">Website</h4>
+                    <a
+                      href={companyData.website.startsWith('http') ? companyData.website : `https://${companyData.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-2"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      {companyData.website}
+                    </a>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600">Loading company information...</p>
+              </div>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
 
